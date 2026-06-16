@@ -1,0 +1,97 @@
+---
+/**
+ * RadarChart — personal traits as a spider chart (Chart.js).
+ * Driven by src/data/traits.json. Recolors on light/dark toggle.
+ */
+---
+<figure class="chart-card card">
+  <div class="chart-card__body">
+    <canvas id="radar-chart" aria-label="Radar chart of self-rated personal traits" role="img"></canvas>
+  </div>
+  <figcaption class="chart-card__cap">Self-rated traits (0–10). Edit <code>traits.json</code>.</figcaption>
+</figure>
+
+<style>
+  .chart-card { padding: var(--space-4); }
+  .chart-card__body { position: relative; aspect-ratio: 1 / 1; }
+  .chart-card__cap {
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  .chart-card__cap code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--color-surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+</style>
+
+<script>
+  import {
+    Chart,
+    RadarController,
+    RadialLinearScale,
+    PointElement,
+    LineElement,
+    Filler,
+    Tooltip,
+  } from 'chart.js';
+  import traits from '../../data/traits.json';
+  import { cssVar, withAlpha, onThemeChange } from '../../lib/chartTheme.js';
+
+  Chart.register(RadarController, RadialLinearScale, PointElement, LineElement, Filler, Tooltip);
+
+  const canvas = document.getElementById('radar-chart');
+  if (canvas) {
+    let chart;
+
+    function build() {
+      const accent = cssVar('--color-accent');
+      const text = cssVar('--color-text-muted');
+      const grid = cssVar('--color-border');
+
+      chart = new Chart(canvas, {
+        type: 'radar',
+        data: {
+          labels: traits.axes.map((a) => a.trait),
+          datasets: [
+            {
+              label: 'Trait level',
+              data: traits.axes.map((a) => a.value),
+              fill: true,
+              backgroundColor: withAlpha(accent, 0.2),
+              borderColor: accent,
+              pointBackgroundColor: accent,
+              pointBorderColor: accent,
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            r: {
+              min: 0,
+              max: traits.max ?? 10,
+              ticks: { display: false, stepSize: 2 },
+              grid: { color: grid },
+              angleLines: { color: grid },
+              pointLabels: { color: text, font: { size: 13 } },
+            },
+          },
+        },
+      });
+    }
+
+    build();
+    // Rebuild with fresh colors when the theme changes.
+    onThemeChange(() => {
+      chart?.destroy();
+      build();
+    });
+  }
+</script>

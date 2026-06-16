@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" role="img" aria-label="Placeholder image">
+  <rect width="400" height="240" fill="#f1f2f6"/>
+  <rect x="8" y="8" width="384" height="224" rx="10" fill="none" stroke="#c7cbd6" stroke-width="2" stroke-dasharray="8 8"/>
+  <text x="200" y="116" font-family="system-ui, sans-serif" font-size="40" text-anchor="middle">🖼️</text>
+  <text x="200" y="150" font-family="system-ui, sans-serif" font-size="16" font-weight="600"
+        text-anchor="middle" fill="#5d616b">PLACEHOLDER IMAGE</text>
+</svg>

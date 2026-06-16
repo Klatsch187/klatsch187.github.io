@@ -1,0 +1,104 @@
+---
+/**
+ * SkillsArea — proficiency of several skills over time (Chart.js line/area).
+ * Driven by src/data/skills.json. A different chart type + dataset shape than
+ * the radar, to show varied visualizations. Recolors on light/dark toggle.
+ */
+---
+<figure class="chart-card card">
+  <div class="chart-card__body chart-card__body--wide">
+    <canvas id="skills-chart" aria-label="Area chart of skill proficiency over time" role="img"></canvas>
+  </div>
+  <figcaption class="chart-card__cap">Skill growth over time (0–100). Edit <code>skills.json</code>.</figcaption>
+</figure>
+
+<style>
+  .chart-card { padding: var(--space-4); }
+  .chart-card__body--wide { position: relative; aspect-ratio: 16 / 9; }
+  .chart-card__cap {
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  .chart-card__cap code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--color-surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+</style>
+
+<script>
+  import {
+    Chart,
+    LineController,
+    LineElement,
+    PointElement,
+    LinearScale,
+    CategoryScale,
+    Filler,
+    Tooltip,
+    Legend,
+  } from 'chart.js';
+  import skills from '../../data/skills.json';
+  import { cssVar, vizPalette, withAlpha, onThemeChange } from '../../lib/chartTheme.js';
+
+  Chart.register(
+    LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip, Legend
+  );
+
+  const canvas = document.getElementById('skills-chart');
+  if (canvas) {
+    let chart;
+
+    function build() {
+      const palette = vizPalette();
+      const text = cssVar('--color-text-muted');
+      const grid = cssVar('--color-border');
+
+      chart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: skills.years,
+          datasets: skills.skills.map((s, i) => {
+            const color = palette[i % palette.length];
+            return {
+              label: s.name,
+              data: s.values,
+              borderColor: color,
+              backgroundColor: withAlpha(color, 0.15),
+              pointBackgroundColor: color,
+              fill: true,
+              tension: 0.35,
+              borderWidth: 2,
+            };
+          }),
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { labels: { color: text, usePointStyle: true, boxHeight: 7 } },
+          },
+          scales: {
+            x: { grid: { color: grid }, ticks: { color: text } },
+            y: {
+              min: 0,
+              max: 100,
+              grid: { color: grid },
+              ticks: { color: text, stepSize: 25 },
+            },
+          },
+        },
+      });
+    }
+
+    build();
+    onThemeChange(() => {
+      chart?.destroy();
+      build();
+    });
+  }
+</script>

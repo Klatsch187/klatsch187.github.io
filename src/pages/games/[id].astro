@@ -1,0 +1,62 @@
+---
+/**
+ * Game player — one prerendered page per registry entry (/games/<id>/).
+ * The actual game code is dynamically imported on the client, so each game
+ * ships as its own lazy-loaded chunk.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { games, getGame } from '../../games/manifest.js';
+import { withBase } from '../../lib/paths.js';
+
+// Prerender a static route for every registered game.
+export function getStaticPaths() {
+  return games.map((g) => ({ params: { id: g.id }, props: { game: g } }));
+}
+
+const { game } = Astro.props;
+---
+<BaseLayout title={game.title} activeNav="games">
+  <section class="section container game-page">
+    <a class="game-page__back" href={withBase('/games/')}>← All games</a>
+    <header class="section__head">
+      <h1>{game.title}</h1>
+      <p class="section__lead">{game.description}</p>
+    </header>
+
+    {/* The game mounts itself into this element. */}
+    <div id="game-root" data-game-id={game.id} class="game-page__root">
+      <p class="game-page__loading">Loading game…</p>
+    </div>
+    <noscript>
+      <p class="placeholder-note">This game needs JavaScript enabled.</p>
+    </noscript>
+  </section>
+</BaseLayout>
+
+<style>
+  .game-page { max-width: 720px; }
+  .game-page__back { display: inline-block; margin-bottom: var(--space-4); font-weight: 600; }
+  .game-page__root { margin-top: var(--space-4); }
+  .game-page__loading { color: var(--color-text-muted); }
+</style>
+
+<script>
+  import { loadGame } from '../../games/loader.js';
+
+  const root = document.getElementById('game-root');
+  const id = root?.dataset.gameId;
+  if (root && id) {
+    loadGame(id)
+      .then((mod) => {
+        root.innerHTML = '';
+        mod.mount(root);
+        // Best-effort cleanup when leaving the page.
+        window.addEventListener('pagehide', () => mod.unmount?.(), { once: true });
+      })
+      .catch((err) => {
+        console.error(err);
+        root.innerHTML =
+          '<p class="placeholder-note">Could not load this game. See console for details.</p>';
+      });
+  }
+</script>

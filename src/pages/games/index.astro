@@ -1,0 +1,36 @@
+---
+/**
+ * Games hub — renders a grid of cards from the games registry.
+ * Add a game = add an entry to src/games/manifest.js (+ its module folder).
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import GameCard from '../../components/GameCard.astro';
+import { games } from '../../games/manifest.js';
+---
+<BaseLayout title="Games" activeNav="games">
+  <section class="section container">
+    <header class="section__head">
+      <p class="section__eyebrow">Mini-games</p>
+      <h1>Games hub</h1>
+      <p class="section__lead">
+        A small collection of self-contained browser games — neal.fun energy.
+        Each is its own lazy-loaded module.
+      </p>
+    </header>
+
+    {games.length === 0 ? (
+      <p class="placeholder-note">No games registered yet. Add one in <code>src/games/manifest.js</code>.</p>
+    ) : (
+      <div class="grid grid--cards">
+        {games.map((game) => <GameCard game={game} />)}
+      </div>
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+  code {
+    font-family: var(--font-mono); font-size: 0.85em;
+    background: var(--color-surface-2); padding: 1px 5px; border-radius: 4px;
+  }
+</style>

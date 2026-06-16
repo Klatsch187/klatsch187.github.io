@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" role="img" aria-label="Headphones review (placeholder)">
+  <rect width="400" height="240" fill="#bae6fd"/>
+  <text x="200" y="140" font-family="system-ui, sans-serif" font-size="80" text-anchor="middle">🎧</text>
+  <text x="200" y="205" font-family="system-ui, sans-serif" font-size="13" text-anchor="middle" fill="#075985">placeholder · replace me</text>
+</svg>

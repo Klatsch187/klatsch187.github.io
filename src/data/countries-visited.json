@@ -1,0 +1,20 @@
+{
+  "_README": "Each entry is a country you've visited. `code` MUST be the ISO 3166-1 alpha-3 code (e.g. USA, FRA, JPN, DEU). The map matches on this code, so it is the only required field. `name`, `year`, and `note` are optional and only used for the tooltip/legend. Add a country by appending an object here — no chart code changes needed. Find codes: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3",
+  "visited": [
+    { "code": "DEU", "name": "Germany", "year": 2024, "note": "Home base (placeholder)" },
+    { "code": "FRA", "name": "France", "year": 2019, "note": "Paris + the Alps" },
+    { "code": "ESP", "name": "Spain", "year": 2021, "note": "Barcelona" },
+    { "code": "ITA", "name": "Italy", "year": 2018, "note": "Rome & Florence" },
+    { "code": "GBR", "name": "United Kingdom", "year": 2017, "note": "London" },
+    { "code": "NLD", "name": "Netherlands", "year": 2022, "note": "Amsterdam" },
+    { "code": "CZE", "name": "Czechia", "year": 2023, "note": "Prague" },
+    { "code": "AUT", "name": "Austria", "year": 2023, "note": "Vienna" },
+    { "code": "CHE", "name": "Switzerland", "year": 2020, "note": "Zürich" },
+    { "code": "USA", "name": "United States", "year": 2016, "note": "NYC + roadtrip" },
+    { "code": "JPN", "name": "Japan", "year": 2025, "note": "Tokyo & Kyoto" },
+    { "code": "THA", "name": "Thailand", "year": 2019, "note": "Bangkok" },
+    { "code": "MAR", "name": "Morocco", "year": 2018, "note": "Marrakesh" },
+    { "code": "ISL", "name": "Iceland", "year": 2022, "note": "Ring road" },
+    { "code": "GRC", "name": "Greece", "year": 2021, "note": "Islands" }
+  ]
+}

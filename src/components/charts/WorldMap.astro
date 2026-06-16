@@ -1,0 +1,196 @@
+---
+/**
+ * WorldMap — D3 geo projection (Natural Earth) + TopoJSON world atlas,
+ * highlighting visited countries.
+ *
+ * Data flow:
+ *   - Visited countries come from src/data/countries-visited.json (ISO alpha-3).
+ *   - We resolve alpha-3 -> ISO numeric HERE (build time) using `world-countries`,
+ *     so that big package stays server-side and never ships to the browser.
+ *   - Only the tiny resolved visited list is inlined as JSON; the map geometry
+ *     (world-atlas) is imported in the client script and code-split by Vite.
+ *
+ * To add a country: edit countries-visited.json. No code changes here.
+ */
+import countries from 'world-countries';
+import visitedData from '../../data/countries-visited.json';
+
+// alpha-3 -> ISO 3166 numeric (e.g. "USA" -> 840). The atlas keys countries
+// by this numeric id, so this is how we match.
+const a3ToNum = new Map(countries.map((c) => [c.cca3, Number(c.ccn3)]));
+
+const visited = visitedData.visited.map((v) => ({
+  ...v,
+  num: a3ToNum.get(v.code) ?? null,
+}));
+const unresolved = visited.filter((v) => v.num === null).map((v) => v.code);
+const count = visited.length;
+---
+
+<figure class="worldmap card" aria-labelledby="worldmap-caption">
+  <div id="worldmap" class="worldmap__canvas" data-count={count}>
+    <span class="worldmap__loading">Loading map…</span>
+  </div>
+  <figcaption id="worldmap-caption" class="worldmap__caption">
+    <span class="worldmap__legend">
+      <span class="worldmap__swatch worldmap__swatch--visited"></span> Visited
+      <span class="worldmap__swatch"></span> Not yet
+    </span>
+    <strong>{count}</strong> countries visited (placeholder data).
+  </figcaption>
+
+  {/* Build-time data handed to the client script. */}
+  <script
+    type="application/json"
+    id="worldmap-data"
+    set:html={JSON.stringify({ visited })}
+  />
+</figure>
+
+{unresolved.length > 0 && (
+  <p class="placeholder-note">
+    ⚠️ Unknown ISO alpha-3 code(s) in countries-visited.json: {unresolved.join(', ')}.
+    They won't be highlighted. Check the codes at the link in that file.
+  </p>
+)}
+
+<style>
+  .worldmap { padding: var(--space-4); overflow: hidden; }
+  .worldmap__canvas {
+    position: relative;
+    width: 100%;
+    min-height: 220px;
+  }
+  .worldmap__loading {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  .worldmap__caption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  .worldmap__legend { display: inline-flex; align-items: center; gap: var(--space-2); }
+  .worldmap__swatch {
+    width: 14px; height: 14px; border-radius: 3px;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    display: inline-block;
+  }
+  .worldmap__swatch--visited { background: var(--color-accent); border-color: var(--color-accent); }
+
+  /* These style the D3-generated SVG; using CSS vars means the map
+     re-themes automatically on light/dark toggle (no JS re-render). */
+  :global(.worldmap__svg) { width: 100%; height: auto; display: block; }
+  :global(.worldmap__svg .country) {
+    fill: var(--color-surface-2);
+    stroke: var(--color-border);
+    stroke-width: 0.4px;
+    transition: fill var(--transition);
+  }
+  :global(.worldmap__svg .country--visited) { fill: var(--color-accent); }
+  :global(.worldmap__svg .country--visited:hover),
+  :global(.worldmap__svg .country--visited:focus) {
+    fill: var(--color-accent-strong);
+    outline: none;
+  }
+  .worldmap__tooltip {
+    position: absolute;
+    pointer-events: none;
+    transform: translate(-50%, calc(-100% - 10px));
+    background: var(--color-text);
+    color: var(--color-bg);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity var(--transition);
+    box-shadow: var(--shadow);
+    z-index: 5;
+  }
+  .worldmap__tooltip .muted { opacity: 0.7; }
+</style>
+
+<script>
+  import { select } from 'd3-selection';
+  import { geoNaturalEarth1, geoPath } from 'd3-geo';
+  import { feature } from 'topojson-client';
+  // Code-split: only loaded on pages that include the map.
+  import topo from 'world-atlas/countries-110m.json';
+
+  const el = document.getElementById('worldmap');
+  const dataEl = document.getElementById('worldmap-data');
+  if (el && dataEl) {
+    const W = 960;
+    const H = 480;
+    const { visited } = JSON.parse(dataEl.textContent || '{"visited":[]}');
+    const visitedByNum = new Map(
+      visited.filter((v) => v.num != null).map((v) => [v.num, v])
+    );
+
+    const fc = feature(topo, topo.objects.countries);
+    const projection = geoNaturalEarth1().fitSize([W, H], fc);
+    const path = geoPath(projection);
+
+    el.querySelector('.worldmap__loading')?.remove();
+
+    const svg = select(el)
+      .append('svg')
+      .attr('class', 'worldmap__svg')
+      .attr('viewBox', `0 0 ${W} ${H}`)
+      .attr('preserveAspectRatio', 'xMidYMid meet')
+      .attr('role', 'img')
+      .attr('aria-label', `World map highlighting ${visitedByNum.size} visited countries`);
+
+    const tooltip = select(el)
+      .append('div')
+      .attr('class', 'worldmap__tooltip')
+      .attr('role', 'status');
+
+    const isVisited = (d) => visitedByNum.has(Number(d.id));
+
+    function describe(d) {
+      const v = visitedByNum.get(Number(d.id));
+      const name = (v && v.name) || d.properties?.name || 'Unknown';
+      if (v) {
+        const year = v.year ? ` · ${v.year}` : '';
+        const note = v.note ? `<br><span class="muted">${v.note}</span>` : '';
+        return `<strong>${name}</strong>${year}${note}`;
+      }
+      return `<strong>${name}</strong><br><span class="muted">Not visited yet</span>`;
+    }
+
+    function showTip(d, x, y) {
+      tooltip.html(describe(d)).style('left', `${x}px`).style('top', `${y}px`).style('opacity', '1');
+    }
+    const hideTip = () => tooltip.style('opacity', '0');
+
+    svg
+      .append('g')
+      .selectAll('path')
+      .data(fc.features)
+      .join('path')
+      .attr('d', path)
+      .attr('class', (d) => (isVisited(d) ? 'country country--visited' : 'country'))
+      // Only visited countries are keyboard-focusable (avoids 200 tab stops).
+      .attr('tabindex', (d) => (isVisited(d) ? 0 : null))
+      .attr('aria-label', (d) => (isVisited(d) ? describe(d).replace(/<[^>]+>/g, ' ') : null))
+      .on('pointermove', function (event, d) {
+        const r = el.getBoundingClientRect();
+        showTip(d, event.clientX - r.left, event.clientY - r.top);
+      })
+      .on('pointerleave', hideTip)
+      .on('focus', function (event, d) {
+        const r = el.getBoundingClientRect();
+        const [cx, cy] = path.centroid(d);
+        showTip(d, (r.width * cx) / W, (r.height * cy) / H);
+      })
+      .on('blur', hideTip);
+  }
+</script>

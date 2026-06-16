@@ -1,0 +1,13 @@
+{
+  "_README": "Radar/spider chart of self-rated traits. Each axis is one trait scored 0-10. Keep 4-8 axes for a readable shape. `max` sets the chart ceiling. Add/rename axes freely — the chart adapts.",
+  "max": 10,
+  "axes": [
+    { "trait": "Curiosity", "value": 9 },
+    { "trait": "Creativity", "value": 7 },
+    { "trait": "Discipline", "value": 6 },
+    { "trait": "Empathy", "value": 8 },
+    { "trait": "Risk-taking", "value": 5 },
+    { "trait": "Focus", "value": 7 },
+    { "trait": "Optimism", "value": 8 }
+  ]
+}

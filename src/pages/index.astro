@@ -1,0 +1,93 @@
+---
+/**
+ * About Me — landing page. Hero + four data visualizations + timeline.
+ * Each chart is a self-contained component driven by its own data file.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import WorldMap from '../components/charts/WorldMap.astro';
+import RadarChart from '../components/charts/RadarChart.astro';
+import HabitHeatmap from '../components/charts/HabitHeatmap.astro';
+import SkillsArea from '../components/charts/SkillsArea.astro';
+import Timeline from '../components/charts/Timeline.astro';
+---
+
+<BaseLayout title="About" activeNav="about">
+  <Hero />
+
+  <div class="container">
+    <p class="placeholder-note">
+      📝 Everything below is <strong>placeholder data</strong>. Edit the JSON
+      files in <code>src/data/</code> to make it yours — no chart code changes
+      needed.
+    </p>
+  </div>
+
+  {/* --- Visited countries map --- */}
+  <section id="map" class="section container">
+    <header class="section__head">
+      <p class="section__eyebrow">Where I've been</p>
+      <h2>Countries visited</h2>
+      <p class="section__lead">
+        A world map driven by <code>countries-visited.json</code>. Hover a
+        highlighted country for details.
+      </p>
+    </header>
+    <WorldMap />
+  </section>
+
+  {/* --- Traits + habit, side by side on wide screens --- */}
+  <section id="metrics" class="section container">
+    <header class="section__head">
+      <p class="section__eyebrow">Me, quantified-ish</p>
+      <h2>Traits &amp; habits</h2>
+      <p class="section__lead">
+        A radar chart of self-rated traits and a calendar heatmap of a daily
+        habit — two libraries, two chart types.
+      </p>
+    </header>
+    <div class="metrics-grid">
+      <RadarChart />
+      <HabitHeatmap />
+    </div>
+  </section>
+
+  {/* --- Skills over time --- */}
+  <section id="skills" class="section container">
+    <header class="section__head">
+      <p class="section__eyebrow">Leveling up</p>
+      <h2>Skills over time</h2>
+      <p class="section__lead">Stacked area of proficiency by year.</p>
+    </header>
+    <SkillsArea />
+  </section>
+
+  {/* --- Life timeline --- */}
+  <section id="timeline" class="section container">
+    <header class="section__head">
+      <p class="section__eyebrow">The story so far</p>
+      <h2>Life timeline</h2>
+      <p class="section__lead">Milestones, in order.</p>
+    </header>
+    <Timeline />
+  </section>
+</BaseLayout>
+
+<style>
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: var(--space-5);
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .metrics-grid { grid-template-columns: 1fr; }
+  }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--color-surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+</style>

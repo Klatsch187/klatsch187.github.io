@@ -1,0 +1,91 @@
+---
+/**
+ * Hero — landing intro for the About page. Driven by src/data/profile.json.
+ */
+import profile from '../data/profile.json';
+---
+<section class="hero">
+  <div class="container hero__inner">
+    <div class="hero__avatar" aria-hidden="true">{profile.avatarEmoji}</div>
+    <p class="hero__eyebrow">{profile.location}</p>
+    <h1 class="hero__title">
+      Hi, I'm <span class="hero__name">{profile.name}</span>.
+    </h1>
+    <p class="hero__tagline">{profile.tagline}</p>
+    <p class="hero__intro">{profile.intro}</p>
+
+    <ul class="hero__links">
+      {
+        profile.links.map((l) => (
+          <li>
+            <a class="btn btn--ghost" href={l.url}>{l.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <dl class="hero__facts">
+      {
+        profile.quickFacts.map((f) => (
+          <div class="hero__fact card">
+            <dt>{f.label}</dt>
+            <dd>{f.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding-block: var(--space-8) var(--space-6);
+    background:
+      radial-gradient(60% 80% at 50% -10%, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent);
+  }
+  .hero__inner { text-align: center; max-width: 760px; }
+  .hero__avatar {
+    font-size: 3rem;
+    width: 84px; height: 84px;
+    margin: 0 auto var(--space-4);
+    display: grid; place-items: center;
+    border-radius: 999px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow);
+  }
+  .hero__eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-2);
+  }
+  .hero__title { font-size: var(--text-4xl); margin-bottom: var(--space-3); }
+  .hero__name { color: var(--color-accent); }
+  .hero__tagline { font-size: var(--text-xl); color: var(--color-text); margin-bottom: var(--space-3); }
+  .hero__intro { color: var(--color-text-muted); font-size: var(--text-lg); }
+  .hero__links {
+    list-style: none; margin: var(--space-5) 0 0; padding: 0;
+    display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap;
+  }
+  .hero__facts {
+    margin: var(--space-7) 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-3);
+  }
+  .hero__fact { padding: var(--space-3) var(--space-4); text-align: left; }
+  .hero__fact dt {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+  }
+  .hero__fact dd { margin: var(--space-1) 0 0; font-weight: 700; }
+
+  @media (max-width: 540px) {
+    .hero__title { font-size: var(--text-3xl); }
+  }
+</style>

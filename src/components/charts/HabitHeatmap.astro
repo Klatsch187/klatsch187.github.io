@@ -1,0 +1,150 @@
+---
+/**
+ * HabitHeatmap — a GitHub-style contribution calendar (D3, hand-built SVG).
+ * Driven by src/data/habits.json. Cells are colored by intensity LEVEL via
+ * CSS classes (.level-0..4), so the chart re-themes automatically with no JS.
+ */
+import habit from '../../data/habits.json';
+
+// Server-side summary for the accessible caption.
+const activeDays = Object.keys(habit.values).length;
+const total = Object.values(habit.values).reduce((a, b) => a + b, 0);
+---
+
+<figure class="heatmap card" aria-labelledby="heatmap-cap">
+  <div class="heatmap__scroll">
+    <div id="heatmap" class="heatmap__canvas"><span class="heatmap__loading">Loading…</span></div>
+  </div>
+  <figcaption id="heatmap-cap" class="heatmap__cap">
+    <strong>{habit.name}</strong> in {habit.year}: {activeDays} active days,
+    {total.toLocaleString()} {habit.unit} total (placeholder). Edit <code>habits.json</code>.
+  </figcaption>
+</figure>
+
+<style>
+  .heatmap { padding: var(--space-4); }
+  .heatmap__scroll { overflow-x: auto; padding-bottom: var(--space-2); }
+  .heatmap__canvas { position: relative; min-width: 720px; }
+  .heatmap__loading { color: var(--color-text-muted); font-size: var(--text-sm); }
+  .heatmap__cap {
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  .heatmap__cap code {
+    font-family: var(--font-mono); font-size: 0.85em;
+    background: var(--color-surface-2); padding: 1px 5px; border-radius: 4px;
+  }
+
+  /* D3-generated SVG — colored via CSS vars so dark mode just works. */
+  :global(.heatmap__svg) { display: block; }
+  :global(.heatmap__svg .cell) { stroke: var(--color-bg); stroke-width: 1px; rx: 2px; }
+  :global(.heatmap__svg .cell.level-0) { fill: var(--heat-0); }
+  :global(.heatmap__svg .cell.level-1) { fill: var(--heat-1); }
+  :global(.heatmap__svg .cell.level-2) { fill: var(--heat-2); }
+  :global(.heatmap__svg .cell.level-3) { fill: var(--heat-3); }
+  :global(.heatmap__svg .cell.level-4) { fill: var(--heat-4); }
+  :global(.heatmap__svg .label) { fill: var(--color-text-muted); font-size: 10px; }
+
+  .heatmap__tooltip {
+    position: absolute; pointer-events: none;
+    transform: translate(-50%, calc(-100% - 8px));
+    background: var(--color-text); color: var(--color-bg);
+    padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
+    font-size: var(--text-xs); white-space: nowrap; opacity: 0;
+    transition: opacity var(--transition); box-shadow: var(--shadow); z-index: 5;
+  }
+</style>
+
+<script>
+  import { select } from 'd3-selection';
+  import { timeDay, timeSunday, timeMonths } from 'd3-time';
+  import { timeFormat } from 'd3-time-format';
+  import { scaleQuantize } from 'd3-scale';
+  import { max } from 'd3-array';
+  import habit from '../../data/habits.json';
+
+  const el = document.getElementById('heatmap');
+  if (el) {
+    const CELL = 13;
+    const GAP = 3;
+    const STEP = CELL + GAP;
+    const MARGIN = { top: 20, left: 30, right: 10, bottom: 4 };
+
+    const fmtKey = timeFormat('%Y-%m-%d');
+    const fmtNice = timeFormat('%a, %b %-d %Y');
+    const fmtMonth = timeFormat('%b');
+
+    const year = habit.year;
+    const start = new Date(year, 0, 1);
+    const end = new Date(year, 11, 31);
+    const days = timeDay.range(start, timeDay.offset(end, 1));
+    const origin = timeSunday.floor(start);
+
+    const weekIndex = (d) => timeSunday.count(origin, d);
+    const valueOf = (d) => habit.values[fmtKey(d)] || 0;
+
+    const maxVal = max(days, valueOf) || 1;
+    // value 0 -> level 0; otherwise quantize into 1..4.
+    const quant = scaleQuantize().domain([1, maxVal]).range([1, 2, 3, 4]);
+    const levelOf = (v) => (v > 0 ? quant(v) : 0);
+
+    const weeks = weekIndex(end) + 1;
+    const width = MARGIN.left + weeks * STEP + MARGIN.right;
+    const height = MARGIN.top + 7 * STEP + MARGIN.bottom;
+
+    el.querySelector('.heatmap__loading')?.remove();
+    const svg = select(el)
+      .append('svg')
+      .attr('class', 'heatmap__svg')
+      .attr('viewBox', `0 0 ${width} ${height}`)
+      .attr('width', width)
+      .attr('height', height)
+      .attr('role', 'img')
+      .attr('aria-label', `${habit.name} heatmap for ${year}`);
+
+    const tooltip = select(el).append('div').attr('class', 'heatmap__tooltip').attr('role', 'status');
+
+    // Day-of-week labels (Mon/Wed/Fri).
+    const dayLabels = [['Mon', 1], ['Wed', 3], ['Fri', 5]];
+    svg.append('g')
+      .selectAll('text')
+      .data(dayLabels)
+      .join('text')
+      .attr('class', 'label')
+      .attr('x', 0)
+      .attr('y', ([, i]) => MARGIN.top + i * STEP + CELL)
+      .text(([name]) => name);
+
+    // Month labels along the top.
+    svg.append('g')
+      .selectAll('text')
+      .data(timeMonths(start, timeDay.offset(end, 1)))
+      .join('text')
+      .attr('class', 'label')
+      .attr('x', (d) => MARGIN.left + weekIndex(d) * STEP)
+      .attr('y', 12)
+      .text((d) => fmtMonth(d));
+
+    // The day cells.
+    svg.append('g')
+      .selectAll('rect')
+      .data(days)
+      .join('rect')
+      .attr('class', (d) => `cell level-${levelOf(valueOf(d))}`)
+      .attr('width', CELL)
+      .attr('height', CELL)
+      .attr('x', (d) => MARGIN.left + weekIndex(d) * STEP)
+      .attr('y', (d) => MARGIN.top + d.getDay() * STEP)
+      .on('pointermove', function (event, d) {
+        const r = el.getBoundingClientRect();
+        const v = valueOf(d);
+        tooltip
+          .html(`<strong>${v} ${habit.unit}</strong><br>${fmtNice(d)}`)
+          .style('left', `${event.clientX - r.left}px`)
+          .style('top', `${event.clientY - r.top}px`)
+          .style('opacity', '1');
+      })
+      .on('pointerleave', () => tooltip.style('opacity', '0'));
+  }
+</script>

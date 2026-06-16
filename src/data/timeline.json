@@ -1,0 +1,12 @@
+{
+  "_README": "Timeline of life events, rendered as an accessible ordered list. Each event needs `year` and `title`; `description` and `icon` (any emoji) are optional. Order doesn't matter — events are sorted by year ascending at render time.",
+  "events": [
+    { "year": 2014, "title": "Started this whole journey", "icon": "🌱", "description": "PLACEHOLDER — first big milestone goes here." },
+    { "year": 2016, "title": "First trip abroad solo", "icon": "✈️", "description": "Three weeks across the US." },
+    { "year": 2018, "title": "Picked up photography", "icon": "📷", "description": "Bought a used camera, never looked back." },
+    { "year": 2020, "title": "Learned to code properly", "icon": "💻", "description": "Built my first real project." },
+    { "year": 2023, "title": "Moved cities", "icon": "📦", "description": "New base, new routines." },
+    { "year": 2025, "title": "Visited Japan", "icon": "⛩️", "description": "Bucket-list trip finally happened." },
+    { "year": 2026, "title": "Launched this site", "icon": "🚀", "description": "You are looking at it." }
+  ]
+}

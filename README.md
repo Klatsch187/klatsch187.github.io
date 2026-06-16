@@ -1,2 +1,191 @@
 # klatsch187.github.io
-personal webpage with random stuff
+
+My personal website — three sections, all static, deployed to GitHub Pages:
+
+1. **About** — a hero intro plus data-viz about me: a D3 visited-countries world
+   map, a Chart.js traits radar, a D3 habit heatmap-calendar, a Chart.js
+   skills-over-time area chart, and an accessible life timeline.
+2. **Games** — a neal.fun-style hub of self-contained mini-games (one built:
+   a reaction-time test).
+3. **Reviews** — filterable/sortable/searchable reviews of places, things, and
+   activities, written as Markdown files.
+
+Built with **[Astro](https://astro.build)** + **D3** + **Chart.js**. Astro was
+chosen because the content is mixed (pages + Markdown + interactive charts) with
+small "islands" of JS — it ships zero JavaScript by default and only hydrates
+the interactive bits, which keeps the site fast. Reviews use Astro **content
+collections** (schema-validated Markdown), and games are **lazy-loaded** via
+Vite's `import.meta.glob`.
+
+> ℹ️ **Everything is placeholder content** right now. Look for the dashed
+> "placeholder" callouts on each page and the `PLACEHOLDER` markers in data
+> files. Replace them with the real thing — see the guides below.
+
+---
+
+## Local development
+
+Requires Node 18.20+ / 20+ / 22+ (built on Node 22).
+
+```bash
+npm install      # install dependencies
+npm run dev      # start dev server at http://localhost:4321
+npm run build    # production build into dist/
+npm run preview  # preview the production build locally
+```
+
+---
+
+## Project structure
+
+```
+src/
+├── components/          # reusable UI (Nav, Hero, cards, ThemeToggle…)
+│   └── charts/          # one component per visualization
+├── content/
+│   └── reviews/         # ← reviews live here, one .md per review
+├── content.config.ts    # review front-matter schema (validated at build)
+├── data/                # ← editable data files (your numbers go here)
+│   ├── profile.json         hero intro + quick facts
+│   ├── countries-visited.json   visited countries (ISO alpha-3)
+│   ├── traits.json          radar chart axes
+│   ├── skills.json          skills-over-time series
+│   ├── habits.json          habit heatmap (generated, then editable)
+│   └── timeline.json        life events
+├── games/               # ← games hub
+│   ├── manifest.js          the games registry (one entry per game)
+│   ├── loader.js            lazy module loader (don't edit)
+│   ├── README.md            "how to add a game" guide
+│   └── reaction-time/       a self-contained game (game.js + game.css)
+├── layouts/BaseLayout.astro
+├── lib/                 # small helpers (paths, chart theming)
+├── pages/               # routes: / , /games/ , /games/[id]/ , /reviews/
+└── styles/global.css    # ← design system: all CSS variables live here
+```
+
+---
+
+## How to edit the content
+
+### Re-theme the site (colors, spacing, fonts)
+
+All design tokens are CSS variables at the top of
+[`src/styles/global.css`](src/styles/global.css). Edit `--color-accent`,
+`--space-*`, `--font-sans`, etc. Light and dark palettes are defined in
+`:root` and `:root[data-theme='dark']`. Change them in one place; the whole
+site (and the charts) follow.
+
+### Add a visited country (world map)
+
+Append to [`src/data/countries-visited.json`](src/data/countries-visited.json).
+`code` must be the **ISO 3166-1 alpha-3** code; the rest is optional:
+
+```json
+{ "code": "PRT", "name": "Portugal", "year": 2024, "note": "Lisbon" }
+```
+
+(Find codes: <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3>.) An unknown
+code shows a warning on the page instead of silently failing.
+
+### Edit traits (radar), skills (area), timeline
+
+- **Traits** — [`src/data/traits.json`](src/data/traits.json): each axis is
+  `{ "trait": "Curiosity", "value": 9 }`, scored 0–`max`.
+- **Skills** — [`src/data/skills.json`](src/data/skills.json): a shared `years`
+  array + one `{ name, values }` per skill (`values` aligned to `years`).
+- **Timeline** — [`src/data/timeline.json`](src/data/timeline.json): events of
+  `{ year, title, description?, icon? }`.
+
+Each file starts with a `_README` field documenting its schema.
+
+### Edit the habit heatmap
+
+[`src/data/habits.json`](src/data/habits.json) maps ISO dates to a daily amount:
+
+```json
+{ "name": "Guitar practice", "unit": "minutes", "year": 2025,
+  "values": { "2025-01-07": 35, "2025-01-08": 20 } }
+```
+
+Missing days render empty. The placeholder data was generated with
+`npm run gen:habits` (see [`scripts/generate-habits.mjs`](scripts/generate-habits.mjs)) —
+re-run it to regenerate, or just hand-edit.
+
+### Add a game
+
+See [`src/games/README.md`](src/games/README.md). In short: drop a
+`src/games/<id>/game.js` (exporting `mount(root)`), add one entry to
+[`src/games/manifest.js`](src/games/manifest.js), and add a thumbnail in
+`public/images/games/`. No other wiring needed — it's discovered automatically.
+
+### Add a review
+
+Create a Markdown file in [`src/content/reviews/`](src/content/reviews/):
+
+```markdown
+---
+title: The Thing I'm Reviewing
+category: Food          # reuse existing categories to keep the filter tidy
+rating: 4.5             # 0–5, halves allowed
+date: 2026-03-01
+tags: [cozy, cheap]
+image: /images/reviews/my-image.svg   # optional, in public/images/reviews/
+summary: One-line hook.               # optional
+draft: false            # true = hidden from the list
+---
+
+Your review text here.
+```
+
+Front-matter is validated by [`src/content.config.ts`](src/content.config.ts),
+so a bad value (e.g. `rating: 9`) fails the build with a clear error.
+Filtering, sorting, and search update automatically.
+
+---
+
+## Deploying to GitHub Pages
+
+This repo is **`klatsch187.github.io`** — a **user page**, so it's served from
+the domain root and `base` is `/`.
+
+Deployment is automated by
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): every push to
+`main` builds the site and publishes it. **One-time setup:**
+
+> Repo **Settings → Pages → Build and deployment → Source: GitHub Actions**
+
+Then push to `main` and the Actions tab shows the deploy. Your site lands at
+<https://klatsch187.github.io>.
+
+### ⚠️ Base-path gotcha (read if you fork/reuse this)
+
+GitHub Pages serves user/org pages and project pages from different paths:
+
+| Repo name                 | Page type | URL                              | `base` |
+| ------------------------- | --------- | -------------------------------- | ------ |
+| `<user>.github.io`        | user/org  | `https://<user>.github.io/`      | `/`    |
+| anything else, e.g. `blog`| project   | `https://<user>.github.io/blog/` | `/blog/` |
+
+If you turn this into a **project page**, set `base: '/<repo>/'` (and `site`)
+in [`astro.config.mjs`](astro.config.mjs). Every internal link/asset in this
+project already goes through `withBase()`
+([`src/lib/paths.js`](src/lib/paths.js)), so that one change is all that's
+needed — no broken links or images.
+
+### Alternative: deploy from a branch
+
+If you'd rather not use Actions, run `npm run build` and serve `dist/`. The
+simplest path is to keep the Actions workflow; the "deploy from a branch"
+option can't run the Astro build for you, so you'd have to commit `dist/`
+manually, which isn't recommended.
+
+---
+
+## Accessibility & performance notes
+
+- Semantic landmarks (`header`/`nav`/`main`/`footer`), a skip link, visible
+  focus styles, and `prefers-reduced-motion` support.
+- Charts have text alternatives / summaries; the timeline is a plain `<ol>`.
+- Zero JS on pages that don't need it; charts and games are code-split and
+  loaded only where used. The heavy `world-countries` lookup runs at build
+  time and never ships to the browser.

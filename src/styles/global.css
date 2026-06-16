@@ -1,0 +1,320 @@
+/* ==========================================================================
+   DESIGN SYSTEM — single source of truth for theming.
+   Edit these custom properties to re-theme the entire site.
+   Colors are defined for light mode in :root and overridden for dark mode.
+   ========================================================================== */
+
+:root {
+  /* ---- Color palette (light mode) ---- */
+  --color-bg: #fbfbfd;
+  --color-surface: #ffffff;
+  --color-surface-2: #f1f2f6;
+  --color-border: #e2e4ea;
+  --color-text: #1c1d22;
+  --color-text-muted: #5d616b;
+  --color-accent: #4f46e5;        /* primary brand / interactive */
+  --color-accent-strong: #4338ca;
+  --color-accent-contrast: #ffffff;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+
+  /* Data-viz categorical ramp (used by charts) */
+  --viz-1: #4f46e5;
+  --viz-2: #0ea5e9;
+  --viz-3: #10b981;
+  --viz-4: #f59e0b;
+  --viz-5: #ef4444;
+  --viz-6: #a855f7;
+
+  /* Heatmap intensity ramp (light) — level 0..4 */
+  --heat-0: #ebedf0;
+  --heat-1: #c6e7d0;
+  --heat-2: #7bd0a0;
+  --heat-3: #36a169;
+  --heat-4: #1a6b40;
+
+  /* ---- Spacing scale (8px base) ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* ---- Typography ---- */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.875rem;
+  --text-3xl: 2.5rem;
+  --text-4xl: 3.25rem;
+  --leading: 1.6;
+
+  /* ---- Radii, shadow, layout ---- */
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 2px rgba(16, 18, 27, 0.06);
+  --shadow: 0 6px 24px rgba(16, 18, 27, 0.08);
+  --shadow-lg: 0 18px 48px rgba(16, 18, 27, 0.14);
+  --container: 1080px;
+  --transition: 160ms ease;
+}
+
+/* Dark mode overrides. Applied when <html data-theme="dark">. */
+:root[data-theme='dark'] {
+  --color-bg: #0e0f13;
+  --color-surface: #16181f;
+  --color-surface-2: #1f222c;
+  --color-border: #2b2f3a;
+  --color-text: #e9eaf0;
+  --color-text-muted: #9aa0ad;
+  --color-accent: #818cf8;
+  --color-accent-strong: #a5b4fc;
+  --color-accent-contrast: #0e0f13;
+
+  --viz-1: #818cf8;
+  --viz-2: #38bdf8;
+  --viz-3: #34d399;
+  --viz-4: #fbbf24;
+  --viz-5: #f87171;
+  --viz-6: #c084fc;
+
+  --heat-0: #20242e;
+  --heat-1: #1e4632;
+  --heat-2: #2c7a52;
+  --heat-3: #3fb073;
+  --heat-4: #5fe39a;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.6);
+}
+
+/* ==========================================================================
+   RESET / BASE
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background var(--transition), color var(--transition);
+}
+
+h1, h2, h3, h4 {
+  line-height: 1.2;
+  margin: 0 0 var(--space-3);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-2xl); }
+h3 { font-size: var(--text-xl); }
+
+p { margin: 0 0 var(--space-4); }
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+img { max-width: 100%; height: auto; display: block; }
+
+/* ==========================================================================
+   LAYOUT HELPERS
+   ========================================================================== */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--space-5);
+}
+
+.section {
+  padding-block: var(--space-8);
+  scroll-margin-top: 80px; /* keeps anchored sections clear of sticky nav */
+}
+
+.section__head {
+  margin-bottom: var(--space-6);
+}
+.section__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-accent);
+  margin: 0 0 var(--space-2);
+}
+.section__lead {
+  color: var(--color-text-muted);
+  max-width: 60ch;
+  font-size: var(--text-lg);
+}
+
+/* Card primitive used across the site */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================================
+   ACCESSIBILITY HELPERS
+   ========================================================================== */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+/* Visible keyboard focus for everything interactive */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-3);
+  top: -3rem;
+  z-index: 100;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  transition: top var(--transition);
+}
+.skip-link:focus { top: var(--space-3); }
+
+/* ==========================================================================
+   SHARED COMPONENTS (buttons, chips, tags)
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition),
+    transform var(--transition);
+}
+.btn:hover { text-decoration: none; }
+.btn:active { transform: translateY(1px); }
+.btn--primary {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+.btn--primary:hover { background: var(--color-accent-strong); }
+.btn--ghost {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.btn--ghost:hover { background: var(--color-surface-2); }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.chip[aria-pressed='true'],
+.chip.is-active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.tag {
+  font-size: var(--text-xs);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+}
+
+/* Field controls */
+.field {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+/* Generic responsive grid */
+.grid {
+  display: grid;
+  gap: var(--space-5);
+}
+.grid--cards {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+/* Banner that flags placeholder/demo content */
+.placeholder-note {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}

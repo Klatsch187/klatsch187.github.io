@@ -1,0 +1,100 @@
+---
+/**
+ * Site navigation. Links are built with withBase() so they keep working
+ * if the site is moved to a project page (non-root base path).
+ */
+import { withBase } from '../lib/paths.js';
+import ThemeToggle from './ThemeToggle.astro';
+
+const { activeNav } = Astro.props;
+
+const links = [
+  { id: 'about', label: 'About', href: withBase('/') },
+  { id: 'games', label: 'Games', href: withBase('/games/') },
+  { id: 'reviews', label: 'Reviews', href: withBase('/reviews/') },
+];
+---
+
+<header class="nav">
+  <div class="nav__inner container">
+    <a class="nav__brand" href={withBase('/')}>
+      <span class="nav__logo" aria-hidden="true">✦</span>
+      klatsch<span class="nav__brand-accent">187</span>
+    </a>
+
+    <nav aria-label="Primary">
+      <ul class="nav__list">
+        {
+          links.map((l) => (
+            <li>
+              <a
+                href={l.href}
+                class="nav__link"
+                aria-current={activeNav === l.id ? 'page' : undefined}
+              >
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <ThemeToggle />
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    height: 60px;
+  }
+  .nav__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 800;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+  }
+  .nav__brand:hover { text-decoration: none; }
+  .nav__brand-accent { color: var(--color-accent); }
+  .nav__logo { color: var(--color-accent); }
+  .nav__list {
+    display: flex;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    margin-left: auto;
+  }
+  .nav__link {
+    display: inline-block;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+  .nav__link:hover {
+    color: var(--color-text);
+    background: var(--color-surface-2);
+    text-decoration: none;
+  }
+  .nav__link[aria-current='page'] {
+    color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  }
+  @media (max-width: 480px) {
+    .nav__brand span:not(.nav__logo) { display: none; }
+  }
+</style>

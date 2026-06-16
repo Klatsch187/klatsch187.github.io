@@ -1,0 +1,37 @@
+---
+import { withBase } from '../lib/paths.js';
+const year = new Date().getFullYear();
+---
+<footer class="footer">
+  <div class="container footer__inner">
+    <p class="footer__line">
+      Built with <a href="https://astro.build">Astro</a>, D3 &amp; Chart.js ·
+      © {year} klatsch187
+    </p>
+    <nav aria-label="Footer">
+      <a href={withBase('/')}>About</a>
+      <a href={withBase('/games/')}>Games</a>
+      <a href={withBase('/reviews/')}>Reviews</a>
+      <a href="https://github.com/Klatsch187/klatsch187.github.io">Source</a>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-8);
+    padding-block: var(--space-6);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  .footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-5);
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer__line { margin: 0; }
+  .footer nav { display: flex; gap: var(--space-4); }
+</style>

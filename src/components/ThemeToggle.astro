@@ -1,0 +1,71 @@
+---
+/**
+ * Light/dark theme toggle.
+ * Persists choice to localStorage and dispatches a global `themechange`
+ * event so canvas-based charts (Chart.js) can re-render with new colors.
+ * SVG/D3 charts theme automatically via CSS variables.
+ */
+---
+<button
+  id="theme-toggle"
+  class="theme-toggle"
+  type="button"
+  aria-label="Toggle color theme"
+  title="Toggle light/dark"
+>
+  <svg class="icon icon--sun" viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
+    <circle cx="12" cy="12" r="4" fill="currentColor" />
+    <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="12" y1="2" x2="12" y2="4" />
+      <line x1="12" y1="20" x2="12" y2="22" />
+      <line x1="2" y1="12" x2="4" y2="12" />
+      <line x1="20" y1="12" x2="22" y2="12" />
+      <line x1="4.9" y1="4.9" x2="6.3" y2="6.3" />
+      <line x1="17.7" y1="17.7" x2="19.1" y2="19.1" />
+      <line x1="4.9" y1="19.1" x2="6.3" y2="17.7" />
+      <line x1="17.7" y1="6.3" x2="19.1" y2="4.9" />
+    </g>
+  </svg>
+  <svg class="icon icon--moon" viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
+    <path
+      d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8z"
+      fill="currentColor"
+    />
+  </svg>
+</button>
+
+<style>
+  .theme-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+  }
+  .theme-toggle:hover { background: var(--color-surface-2); }
+  .theme-toggle .icon { grid-area: 1 / 1; }
+  /* Show sun in dark mode (click -> go light), moon in light mode. */
+  :root[data-theme='light'] .icon--sun { display: none; }
+  :root[data-theme='dark'] .icon--moon { display: none; }
+</style>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+  toggle?.addEventListener('click', () => {
+    const root = document.documentElement;
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem('theme', next);
+    } catch (e) {
+      /* ignore storage failures */
+    }
+    // Let charts know they need to recolor.
+    window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: next } }));
+  });
+</script>

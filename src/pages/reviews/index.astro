@@ -1,0 +1,172 @@
+---
+/**
+ * Reviews — lists every published review with client-side category filter,
+ * sort, and search. Content comes from src/content/reviews/*.md.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ReviewCard from '../../components/ReviewCard.astro';
+import { getCollection, render } from 'astro:content';
+
+// Published reviews only, newest first by default.
+const entries = (await getCollection('reviews', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+
+// Render each review's Markdown body so it can go in the card slot.
+const rendered = await Promise.all(
+  entries.map(async (entry) => ({ entry, Content: (await render(entry)).Content }))
+);
+
+const categories = ['All', ...Array.from(new Set(entries.map((e) => e.data.category))).sort()];
+---
+<BaseLayout title="Reviews" activeNav="reviews">
+  <section class="section container">
+    <header class="section__head">
+      <p class="section__eyebrow">Opinions, rated</p>
+      <h1>Reviews</h1>
+      <p class="section__lead">
+        Places, objects, and activities — scored out of 5. Filter, sort, and
+        search below. Add one by dropping a Markdown file in
+        <code>src/content/reviews/</code>.
+      </p>
+    </header>
+
+    {/* Toolbar: search + category chips + sort */}
+    <div class="reviews-toolbar">
+      <form class="reviews-search" role="search" onsubmit="return false">
+        <label class="visually-hidden" for="review-search">Search reviews</label>
+        <input
+          id="review-search"
+          class="field"
+          type="search"
+          placeholder="Search reviews…"
+          autocomplete="off"
+        />
+      </form>
+
+      <div class="reviews-filters" role="group" aria-label="Filter by category">
+        {
+          categories.map((cat, i) => (
+            <button
+              type="button"
+              class="chip"
+              data-cat-filter
+              data-category={cat}
+              aria-pressed={i === 0 ? 'true' : 'false'}
+            >
+              {cat}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="reviews-sort">
+        <label class="visually-hidden" for="review-sort">Sort reviews</label>
+        <select id="review-sort" class="field">
+          <option value="date-desc">Newest first</option>
+          <option value="date-asc">Oldest first</option>
+          <option value="rating-desc">Highest rated</option>
+          <option value="rating-asc">Lowest rated</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="reviews-count" id="reviews-count" aria-live="polite">{entries.length} reviews</p>
+
+    <div class="grid grid--cards" id="reviews-grid">
+      {rendered.map(({ entry, Content }) => (
+        <ReviewCard review={entry}>
+          <Content />
+        </ReviewCard>
+      ))}
+    </div>
+
+    <p class="reviews-empty placeholder-note" id="reviews-empty" hidden>
+      No reviews match your filters. Try clearing the search or picking “All”.
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .reviews-toolbar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-3) var(--space-4);
+    align-items: center;
+    margin-bottom: var(--space-4);
+  }
+  .reviews-search { grid-column: 1 / 2; }
+  .reviews-sort { grid-column: 2 / 3; }
+  .reviews-filters {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .reviews-count { color: var(--color-text-muted); font-size: var(--text-sm); margin-bottom: var(--space-4); }
+  code {
+    font-family: var(--font-mono); font-size: 0.85em;
+    background: var(--color-surface-2); padding: 1px 5px; border-radius: 4px;
+  }
+  @media (max-width: 560px) {
+    .reviews-toolbar { grid-template-columns: 1fr; }
+    .reviews-search, .reviews-sort { grid-column: 1 / -1; }
+  }
+</style>
+
+<script>
+  // Client-side filter / sort / search. Operates purely on the rendered DOM,
+  // so it stays fast and needs no data round-trips.
+  const grid = document.getElementById('reviews-grid');
+  if (grid) {
+    const cards = Array.from(grid.querySelectorAll('[data-review]'));
+    const searchEl = document.getElementById('review-search');
+    const sortEl = document.getElementById('review-sort');
+    const chips = Array.from(document.querySelectorAll('[data-cat-filter]'));
+    const countEl = document.getElementById('reviews-count');
+    const emptyEl = document.getElementById('reviews-empty');
+
+    const state = { category: 'All', query: '', sort: 'date-desc' };
+
+    const matches = (card) => {
+      if (state.category !== 'All' && card.dataset.category !== state.category) return false;
+      if (state.query && !card.textContent.toLowerCase().includes(state.query)) return false;
+      return true;
+    };
+
+    function apply() {
+      const [key, dir] = state.sort.split('-');
+      const visible = cards.filter(matches);
+      visible.sort((a, b) => {
+        const av = Number(a.dataset[key]);
+        const bv = Number(b.dataset[key]);
+        return dir === 'asc' ? av - bv : bv - av;
+      });
+
+      cards.forEach((c) => { c.hidden = !matches(c); });
+      // Re-append in sorted order (hidden cards keep display:none).
+      visible.forEach((c) => grid.appendChild(c));
+
+      countEl.textContent = `${visible.length} review${visible.length === 1 ? '' : 's'}`;
+      emptyEl.hidden = visible.length > 0;
+    }
+
+    searchEl?.addEventListener('input', (e) => {
+      state.query = e.target.value.toLowerCase().trim();
+      apply();
+    });
+    sortEl?.addEventListener('change', (e) => {
+      state.sort = e.target.value;
+      apply();
+    });
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        state.category = chip.dataset.category;
+        chips.forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+        apply();
+      });
+    });
+
+    apply();
+  }
+</script>

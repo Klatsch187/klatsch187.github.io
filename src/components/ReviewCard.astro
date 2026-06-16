@@ -1,0 +1,94 @@
+---
+/**
+ * ReviewCard — renders one review. Body is provided via the default slot
+ * (the rendered Markdown). Data attributes feed the client-side
+ * filter/sort/search on the reviews page.
+ */
+import { withBase } from '../lib/paths.js';
+
+const { review } = Astro.props;
+const { data } = review;
+
+// Build a 0–5 star display (supports halves).
+const full = Math.floor(data.rating);
+const hasHalf = data.rating - full >= 0.5;
+const stars = Array.from({ length: 5 }, (_, i) => {
+  if (i < full) return 'full';
+  if (i === full && hasHalf) return 'half';
+  return 'empty';
+});
+
+const dateLabel = new Intl.DateTimeFormat('en', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+}).format(data.date);
+---
+<article
+  class="review card"
+  data-review
+  data-category={data.category}
+  data-rating={data.rating}
+  data-date={data.date.getTime()}
+>
+  {data.image && (
+    <div class="review__media">
+      <img src={withBase(data.image)} alt={`${data.title} (placeholder image)`} loading="lazy" width="400" height="240" />
+    </div>
+  )}
+  <div class="review__body">
+    <div class="review__meta">
+      <span class="chip review__cat">{data.category}</span>
+      <span class="review__stars" role="img" aria-label={`Rated ${data.rating} out of 5`}>
+        {stars.map((s) => <span class={`star star--${s}`} aria-hidden="true">★</span>)}
+        <span class="review__rating-num">{data.rating.toFixed(1)}</span>
+      </span>
+    </div>
+
+    <h3 class="review__title">{data.title}</h3>
+    {data.summary && <p class="review__summary">{data.summary}</p>}
+
+    <div class="review__text">
+      <slot />
+    </div>
+
+    <footer class="review__foot">
+      <time datetime={data.date.toISOString()}>{dateLabel}</time>
+      {data.tags.length > 0 && (
+        <ul class="review__tags">
+          {data.tags.map((t) => <li class="tag">#{t}</li>)}
+        </ul>
+      )}
+    </footer>
+  </div>
+</article>
+
+<style>
+  .review { display: flex; flex-direction: column; overflow: hidden; }
+  .review__media { aspect-ratio: 5 / 3; background: var(--color-surface-2); }
+  .review__media img { width: 100%; height: 100%; object-fit: cover; }
+  .review__body { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
+  .review__meta { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+  .review__cat { cursor: default; }
+  .review__stars { display: inline-flex; align-items: center; gap: 1px; font-size: var(--text-sm); }
+  .star--full { color: var(--color-warning); }
+  .star--half {
+    color: var(--color-warning);
+    background: linear-gradient(90deg, currentColor 50%, var(--color-border) 50%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .star--empty { color: var(--color-border); }
+  .review__rating-num { margin-left: var(--space-1); color: var(--color-text-muted); font-weight: 600; }
+  .review__title { margin: 0; font-size: var(--text-lg); }
+  .review__summary { margin: 0; color: var(--color-text); font-style: italic; }
+  .review__text { color: var(--color-text-muted); font-size: var(--text-sm); }
+  .review__text :global(p) { margin: 0 0 var(--space-2); }
+  .review__foot {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: var(--space-2); margin-top: auto; padding-top: var(--space-2);
+    color: var(--color-text-muted); font-size: var(--text-xs);
+  }
+  .review__tags { display: flex; flex-wrap: wrap; gap: var(--space-1); list-style: none; margin: 0; padding: 0; }
+</style>
