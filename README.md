@@ -3,8 +3,9 @@
 My personal website — three sections, all static, deployed to GitHub Pages:
 
 1. **About** — a hero intro plus data-viz about me: a D3 visited-countries world
-   map, a Chart.js traits radar, a Strava-driven Ironman training panel, a
-   Chart.js skills-over-time area chart, and an accessible life timeline.
+   map, a Chart.js traits radar, a Strava-driven Ironman **finish-time
+   projection** (how close am I to sub-12?), a Chart.js skills-over-time area
+   chart, and an accessible life timeline.
 2. **Games** — a neal.fun-style hub of self-contained mini-games (one built:
    a reaction-time test).
 3. **Reviews** — filterable/sortable/searchable reviews of places, things, and
@@ -101,19 +102,38 @@ Each file starts with a `_README` field documenting its schema.
 
 ### Ironman training (Strava)
 
-The Ironman panel reads **[`src/data/ironman-training.json`](src/data/ironman-training.json)**
-(weekly volume by discipline, an HR-derived training-load trend, and race-day
-readiness). Two things produce that file — both writing the **same shape**:
+The Ironman panel projects your **finish time** from training paces and shows how
+close it is to a **sub-12:00** goal (gauge + per-week journey line + race-anatomy
+bar), with weekly volume and heart rate as auxiliary detail. It reads
+**[`src/data/ironman-training.json`](src/data/ironman-training.json)** (per-week
+`hours` **and** `distanceKm` per discipline — their ratio is your pace). Two
+things produce that file, both writing the **same shape**:
 
 | | command | what it does |
 | --- | --- | --- |
 | Placeholder | `npm run gen:ironman` | realistic fake data so the chart looks good now |
 | Live | `npm run fetch:strava` | real activities from your Strava account |
 
-You edit the bits Strava can't know in
-**[`src/data/ironman-config.json`](src/data/ironman-config.json)** — race name,
-**date** (drives the countdown), `peakWeeklyHours` (drives the readiness gauge),
-`maxHr` (used to estimate load from heart rate), and `lookbackWeeks`.
+#### The projection model
+
+It's a transparent **heuristic** (in [`src/lib/ironman.js`](src/lib/ironman.js)),
+not physiology: for each discipline it takes your distance-weighted training
+speed over the recent window, converts it to a *race* pace via `paceFactors`,
+adds transitions, and sums the legs. Tune it all in
+**[`src/data/ironman-config.json`](src/data/ironman-config.json)**:
+
+- `goalFinish` — the target line (default `12:00:00`).
+- `raceDistanceKm` — leg distances (default = full Ironman 140.6).
+- `model.paceFactors` — race pace ÷ training pace per sport. `run: 1.15` models
+  the off-the-bike fade; bump it up if your marathon fades more. `bike`/`swim`
+  default to `1.0`.
+- `model.transitionMinutes` — T1 + T2 combined.
+- `model.paceWindowWeeks` — how many recent weeks define your "current" pace.
+- `race.date` drives the countdown; `peakWeeklyHours`/`maxHr` feed the auxiliary
+  volume/load charts; `lookbackWeeks` bounds the Strava fetch.
+
+Calibrate `paceFactors` once real data flows — they're the main lever on the
+projected time.
 
 #### Connecting Strava (one-time)
 

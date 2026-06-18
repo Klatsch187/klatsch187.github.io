@@ -1,14 +1,25 @@
 {
-  "_README": "User-owned Ironman settings that Strava CAN'T provide. Edit these freely. Both scripts/generate-ironman.mjs (placeholder) and scripts/fetch-strava.mjs (live) read this file and embed it into src/data/ironman-training.json, which the chart actually reads. `race.date` drives the countdown; `targets.peakWeeklyHours` drives the readiness gauge; `targets.maxHr` is used to estimate training load from heart rate. `lookbackWeeks` bounds how far back the Strava fetch reaches.",
+  "_README": "User-owned Ironman settings that Strava CAN'T provide. Edit freely. Both scripts/generate-ironman.mjs (placeholder) and scripts/fetch-strava.mjs (live) read this and embed it into src/data/ironman-training.json, which the chart reads. KEY KNOBS: `goalFinish` is the target time (the sub-12 line). `raceDistanceKm` are the leg distances (defaults = full Ironman). `model.paceFactors` convert TRAINING pace into RACE pace per discipline (>1 = slower in the race; run ~1.15 accounts for the off-the-bike fade). `model.transitionMinutes` is T1+T2 combined. `model.paceWindowWeeks` is how many recent weeks define your 'current' pace. These are a transparent heuristic — calibrate them once real data flows.",
   "athlete": "Klatsch187",
   "race": {
     "name": "Ironman Placeholder 2026",
     "date": "2026-09-06",
     "distanceKey": "140.6"
   },
+  "goalFinish": "12:00:00",
+  "raceDistanceKm": {
+    "swim": 3.86,
+    "bike": 180.0,
+    "run": 42.2
+  },
   "targets": {
     "peakWeeklyHours": 14,
     "maxHr": 190
+  },
+  "model": {
+    "paceFactors": { "swim": 1.0, "bike": 1.0, "run": 1.15 },
+    "transitionMinutes": 8,
+    "paceWindowWeeks": 6
   },
   "lookbackWeeks": 20
 }

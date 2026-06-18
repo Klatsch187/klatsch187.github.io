@@ -1,152 +1,258 @@
 ---
 /**
- * IronmanTraining — training-progress panel driven by src/data/ironman-training.json
- * (placeholder via `npm run gen:ironman`, or live via `npm run fetch:strava`).
+ * IronmanTraining — "road to sub-12" panel driven by src/data/ironman-training.json
+ * (placeholder via `npm run gen:ironman`, live via `npm run fetch:strava`).
  *
- * Three things, per the design:
- *   1. Summary tiles  (days to race, sessions, hours, this week)
- *   2. Readiness gauge (recent 4-wk avg weekly hours vs peak target)
- *   3. Weekly volume by discipline (stacked bar) + HR-derived fitness trend (line)
+ * Spotlight = the projected finish vs the sub-12 goal:
+ *   HERO        goal gauge (SVG) + projected time, delta, gap-closed meter
+ *   SUPPORTING  projected race anatomy (swim/T1/bike/T2/run) with the goal marker
+ *   SUPPORTING  journey line — projected finish per week trending to the goal
+ *   AUXILIARY   weekly volume + HR/load (demoted)
  *
- * Charts reuse the Chart.js + theming pattern from RadarChart/SkillsArea.
+ * The projection math lives in src/lib/ironman.js (shared, transparent). The
+ * gauge and anatomy bar are computed here at build time (pure numbers) and
+ * coloured via CSS variables, so they re-theme with no JS.
  */
 import data from '../../data/ironman-training.json';
+import { summarize, formatHMS, formatSignedMin } from '../../lib/ironman.js';
 
 const weeks = data.weeks ?? [];
-const peak = data.targets?.peakWeeklyHours ?? 14;
 const isPlaceholder = data.source === 'placeholder';
+const s = summarize(weeks, data);
+const hasProjection = !!s.current;
+const goalLabel = formatHMS(s.goalSeconds);
 
-const weekTotal = (w) => (w.hours.swim ?? 0) + (w.hours.bike ?? 0) + (w.hours.run ?? 0);
-const thisWeekHours = weeks.length ? weekTotal(weeks[weeks.length - 1]) : 0;
+// ---- HERO gauge geometry (semicircle spanning goal ± 3h) ----
+const GMIN = s.goalSeconds - 3 * 3600;
+const GMAX = s.goalSeconds + 3 * 3600;
+const R = 90, CX = 110, CY = 110;
+const polar = (deg, radius = R) => {
+  const rad = (deg * Math.PI) / 180;
+  return [CX + radius * Math.cos(rad), CY - radius * Math.sin(rad)];
+};
+// value → angle: GMIN (fast) = 180° (left), GMAX (slow) = 0° (right), goal = 90° (top).
+const angleOf = (v) => 180 * (1 - Math.min(1, Math.max(0, (v - GMIN) / (GMAX - GMIN))));
+const arcPath = (d0, d1, radius = R, steps = 48) => {
+  const pts = [];
+  for (let i = 0; i <= steps; i++) {
+    const [x, y] = polar(d0 + ((d1 - d0) * i) / steps, radius);
+    pts.push(`${x.toFixed(2)} ${y.toFixed(2)}`);
+  }
+  return 'M ' + pts.join(' L ');
+};
 
-// Readiness = recent 4-week average weekly hours vs the peak-week target.
-const recent = weeks.slice(-4);
-const recent4avg = recent.length
-  ? recent.reduce((sum, w) => sum + weekTotal(w), 0) / recent.length
-  : 0;
-const readinessPct = Math.max(0, Math.min(100, Math.round((recent4avg / peak) * 100)));
+let hero = null;
+let anatomy = null;
+if (hasProjection) {
+  const total = s.current.total;
+  const fAngle = angleOf(total);
+  const [nx, ny] = polar(fAngle, R - 22);
+  hero = {
+    time: formatHMS(total),
+    delta: formatSignedMin(s.gapSeconds),
+    good: s.gapSeconds <= 0,
+    progress: Math.round(s.progressPct),
+    trackPath: arcPath(180, 0),
+    greenPath: arcPath(180, 90), // under-goal (left) half
+    redPath: arcPath(90, 0), // over-goal (right) half
+    needle: { x: nx, y: ny },
+    goalTick: { x1: polar(90, R - 18)[0], y1: polar(90, R - 18)[1], x2: polar(90, R + 6)[0], y2: polar(90, R + 6)[1] },
+    minLabel: formatHMS(GMIN),
+    maxLabel: formatHMS(GMAX),
+  };
 
-const fmt1 = (n) => Number(n).toFixed(1);
+  // ---- SUPPORTING race-anatomy bar (time scale up to max(total, goal)) ----
+  const legs = s.current.legs;
+  const maxTime = Math.max(total, s.goalSeconds) * 1.05;
+  anatomy = {
+    goalLeft: (s.goalSeconds / maxTime) * 100,
+    goalBeyond: s.goalSeconds > total, // goal marker sits past the finish?
+    segments: [
+      { key: 'swim', label: 'Swim', sec: legs.swim },
+      { key: 't1', label: 'T1', sec: legs.T1 },
+      { key: 'bike', label: 'Bike', sec: legs.bike },
+      { key: 't2', label: 'T2', sec: legs.T2 },
+      { key: 'run', label: 'Run', sec: legs.run },
+    ].map((x) => ({ ...x, pct: (x.sec / maxTime) * 100, time: formatHMS(x.sec) })),
+  };
+}
 ---
 <div class="im card">
   {isPlaceholder && (
     <p class="placeholder-note im__note">
-      🏊 🚴 🏃 Placeholder training data. Connect Strava (see the README) to drive
-      this from real activities — heart rate &amp; moving time included.
+      🏊 🚴 🏃 Placeholder data. Connect Strava (see the README) to project this
+      from real swim/bike/run paces — the numbers below update automatically.
     </p>
   )}
 
-  <h3 class="im__race">{data.race?.name ?? 'Ironman'} <span class="im__dist">{data.race?.distanceKey}</span></h3>
+  {!hasProjection ? (
+    <p class="im__empty">Not enough training data yet to project a finish time.</p>
+  ) : (
+    <>
+      {/* ---------- HERO ---------- */}
+      <div class="im__hero">
+        <div class="im__gauge">
+          <svg viewBox="0 0 220 132" role="img"
+            aria-label={`Projected Ironman finish ${hero.time}, ${hero.delta} versus the ${goalLabel} goal`}>
+            <path class="g-track" d={hero.trackPath} />
+            <path class="g-green" d={hero.greenPath} />
+            <path class="g-red" d={hero.redPath} />
+            <line class="g-goal" x1={hero.goalTick.x1} y1={hero.goalTick.y1} x2={hero.goalTick.x2} y2={hero.goalTick.y2} />
+            <line class="g-needle" x1={CX} y1={CY} x2={hero.needle.x} y2={hero.needle.y} />
+            <circle class="g-hub" cx={CX} cy={CY} r="6" />
+            <text class="g-end" x="18" y="128">{hero.minLabel.slice(0, 4)}</text>
+            <text class="g-end g-end--r" x="202" y="128">{hero.maxLabel.slice(0, 5)}</text>
+          </svg>
+          <p class="im__gauge-cap">Goal <strong>{goalLabel}</strong> (sub-12) — the red line</p>
+        </div>
 
-  {/* 1) Summary tiles */}
-  <dl class="im__tiles">
-    <div class="im__tile">
-      <dt>Days to race</dt>
-      <dd id="im-countdown" data-race-date={data.race?.date}>—</dd>
-    </div>
-    <div class="im__tile">
-      <dt>Sessions</dt>
-      <dd>{data.totals?.sessions ?? 0}</dd>
-    </div>
-    <div class="im__tile">
-      <dt>Total hours</dt>
-      <dd>{fmt1(data.totals?.movingHours ?? 0)}</dd>
-    </div>
-    <div class="im__tile">
-      <dt>This week</dt>
-      <dd>{fmt1(thisWeekHours)}<span class="im__unit">h</span></dd>
-    </div>
-  </dl>
+        <div class="im__headline">
+          <p class="im__label">Projected finish</p>
+          <p class="im__time">{hero.time}</p>
+          <p class={`im__delta ${hero.good ? 'is-good' : 'is-behind'}`}>
+            {hero.good ? '✅' : '⏳'} {hero.delta} {hero.good ? 'under sub-12' : 'to sub-12'}
+          </p>
 
-  {/* 2) Readiness gauge */}
-  <div class="im__gauge">
-    <div class="im__gauge-head">
-      <span>Race readiness</span>
-      <strong>{readinessPct}%</strong>
-    </div>
-    <div
-      class="im__bar"
-      role="progressbar"
-      aria-valuenow={readinessPct}
-      aria-valuemin="0"
-      aria-valuemax="100"
-      aria-label={`Race readiness ${readinessPct} percent of peak weekly volume`}
-    >
-      <div class="im__bar-fill" style={`width:${readinessPct}%`}></div>
-    </div>
-    <p class="im__gauge-sub">
-      Recent 4-week avg <strong>{fmt1(recent4avg)} h/wk</strong> vs
-      <strong> {peak} h/wk</strong> peak target.
-    </p>
-  </div>
+          <div class="im__meter"
+            role="progressbar" aria-valuenow={hero.progress} aria-valuemin="0" aria-valuemax="100"
+            aria-label={`${hero.progress}% of the way from your starting projection to sub-12`}>
+            <div class="im__meter-fill" style={`width:${hero.progress}%`}></div>
+          </div>
+          <p class="im__meter-cap">
+            {hero.progress >= 100
+              ? 'Projected under your sub-12 goal 🎉'
+              : `${hero.progress}% of the gap from your start to sub-12 closed`}
+          </p>
 
-  {/* 3) Charts */}
-  <div class="im__charts">
-    <figure class="im__chart">
-      <figcaption>Weekly volume by discipline (hours)</figcaption>
-      <div class="im__canvas-wrap">
-        <canvas id="im-volume" role="img"
-          aria-label="Stacked bar chart of weekly swim, bike, and run hours"></canvas>
+          <p class="im__sub">
+            <span id="im-countdown" data-race-date={data.race?.date}>—</span> days to
+            <strong> {data.race?.name}</strong>
+          </p>
+        </div>
       </div>
-    </figure>
-    <figure class="im__chart">
-      <figcaption>Fitness trend (training load)</figcaption>
-      <div class="im__canvas-wrap">
-        <canvas id="im-fitness" role="img"
-          aria-label="Line chart of weekly training load derived from heart rate and moving time"></canvas>
-      </div>
-    </figure>
-  </div>
+
+      {/* ---------- SUPPORTING: race anatomy ---------- */}
+      <section class="im__anatomy" aria-label="Projected race anatomy">
+        <h4 class="im__h4">Projected race anatomy</h4>
+        <div class="im__bar">
+          {anatomy.segments.map((seg) => (
+            <div class={`im__seg im__seg--${seg.key}`} style={`width:${seg.pct}%`}
+              title={`${seg.label}: ${seg.time}`}></div>
+          ))}
+          <div class="im__goal-marker" style={`left:${anatomy.goalLeft}%`} aria-hidden="true">
+            <span class="im__goal-flag">sub-12</span>
+          </div>
+        </div>
+        <ul class="im__legend">
+          {anatomy.segments
+            .filter((seg) => seg.key !== 't1' && seg.key !== 't2')
+            .map((seg) => (
+              <li><span class={`im__dot im__seg--${seg.key}`}></span>{seg.label} <strong>{seg.time}</strong></li>
+            ))}
+          <li class="im__legend-t">+ transitions ~{Math.round((anatomy.segments[1].sec + anatomy.segments[3].sec) / 60)} min</li>
+        </ul>
+      </section>
+
+      {/* ---------- SUPPORTING: journey ---------- */}
+      <figure class="im__journey">
+        <figcaption class="im__h4">Projected finish by week → the journey to sub-12</figcaption>
+        <div class="im__canvas-wrap">
+          <canvas id="im-journey" role="img"
+            aria-label="Line chart of projected finish time per training week, trending toward the sub-12 goal"></canvas>
+        </div>
+      </figure>
+
+      {/* ---------- AUXILIARY (demoted) ---------- */}
+      <section class="im__aux" aria-label="Training detail">
+        <h4 class="im__aux-title">Training detail <span>· volume &amp; heart rate</span></h4>
+        <div class="im__aux-grid">
+          <figure class="im__aux-chart">
+            <figcaption>Weekly hours by discipline</figcaption>
+            <div class="im__canvas-wrap im__canvas-wrap--sm">
+              <canvas id="im-volume" role="img" aria-label="Stacked bar of weekly swim, bike and run hours"></canvas>
+            </div>
+          </figure>
+          <figure class="im__aux-chart">
+            <figcaption>Training load (HR-derived)</figcaption>
+            <div class="im__canvas-wrap im__canvas-wrap--sm">
+              <canvas id="im-fitness" role="img" aria-label="Line chart of weekly training load"></canvas>
+            </div>
+          </figure>
+        </div>
+      </section>
+    </>
+  )}
 </div>
 
 <style>
-  .im { padding: var(--space-5); display: grid; gap: var(--space-5); }
+  .im { padding: var(--space-5); display: grid; gap: var(--space-6); }
   .im__note { margin: 0; }
-  .im__race { margin: 0; font-size: var(--text-lg); }
-  .im__dist {
-    font-size: var(--text-xs); font-weight: 700; vertical-align: middle;
-    margin-left: var(--space-2); padding: 2px 8px; border-radius: 999px;
-    background: color-mix(in srgb, var(--color-accent) 14%, transparent);
-    color: var(--color-accent);
-  }
+  .im__empty { color: var(--color-text-muted); margin: 0; }
+  .im__h4 { margin: 0 0 var(--space-3); font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-text-muted); }
 
-  .im__tiles {
-    margin: 0;
+  /* ---- HERO ---- */
+  .im__hero {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-3);
+    grid-template-columns: 280px 1fr;
+    gap: var(--space-5);
+    align-items: center;
   }
-  .im__tile {
-    padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    background: var(--color-surface-2);
-  }
-  .im__tile dt {
-    font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.07em;
-    color: var(--color-text-muted);
-  }
-  .im__tile dd { margin: var(--space-1) 0 0; font-size: var(--text-2xl); font-weight: 800; }
-  .im__unit { font-size: var(--text-base); font-weight: 600; color: var(--color-text-muted); margin-left: 2px; }
+  .im__gauge { text-align: center; }
+  .im__gauge svg { width: 100%; max-width: 280px; height: auto; }
+  .im__gauge-cap { margin: var(--space-1) 0 0; font-size: var(--text-xs); color: var(--color-text-muted); }
 
-  .im__gauge-head { display: flex; justify-content: space-between; font-size: var(--text-sm); margin-bottom: var(--space-2); }
-  .im__bar { height: 12px; border-radius: 999px; background: var(--color-surface-2); overflow: hidden; border: 1px solid var(--color-border); }
-  .im__bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--viz-3), var(--viz-1));
-    border-radius: 999px;
-    transition: width var(--transition);
-  }
-  .im__gauge-sub { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--color-text-muted); }
+  /* gauge SVG parts — coloured via CSS vars (auto dark-mode) */
+  .g-track { fill: none; stroke: var(--color-surface-2); stroke-width: 16; stroke-linecap: round; }
+  .g-green { fill: none; stroke: var(--color-success); stroke-width: 16; stroke-linecap: round; opacity: 0.85; }
+  .g-red { fill: none; stroke: var(--color-danger); stroke-width: 16; stroke-linecap: round; opacity: 0.8; }
+  .g-goal { stroke: var(--color-text); stroke-width: 3; }
+  .g-needle { stroke: var(--color-text); stroke-width: 4; stroke-linecap: round; }
+  .g-hub { fill: var(--color-text); }
+  .g-end { fill: var(--color-text-muted); font-size: 11px; }
+  .g-end--r { text-anchor: end; }
 
-  .im__charts { display: grid; grid-template-columns: 1.3fr 1fr; gap: var(--space-5); }
-  .im__chart { margin: 0; }
-  .im__chart figcaption { font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-2); }
-  .im__canvas-wrap { position: relative; aspect-ratio: 16 / 10; }
+  .im__label { margin: 0; font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); }
+  .im__time { margin: 0; font-size: clamp(2.5rem, 8vw, 3.75rem); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .im__delta { margin: var(--space-2) 0 0; font-weight: 700; font-size: var(--text-lg); }
+  .im__delta.is-good { color: var(--color-success); }
+  .im__delta.is-behind { color: var(--color-warning); }
+
+  .im__meter { margin-top: var(--space-4); height: 12px; border-radius: 999px; background: var(--color-surface-2); border: 1px solid var(--color-border); overflow: hidden; }
+  .im__meter-fill { height: 100%; background: linear-gradient(90deg, var(--viz-3), var(--viz-1)); border-radius: 999px; transition: width var(--transition); }
+  .im__meter-cap { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--color-text-muted); }
+  .im__sub { margin: var(--space-3) 0 0; font-size: var(--text-sm); color: var(--color-text-muted); }
+  .im__sub span { font-weight: 800; color: var(--color-text); }
+
+  /* ---- ANATOMY BAR ---- */
+  .im__bar { position: relative; display: flex; height: 34px; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-surface-2); border: 1px solid var(--color-border); }
+  .im__seg { height: 100%; min-width: 2px; }
+  .im__seg--swim { background: var(--viz-1); }
+  .im__seg--t1, .im__seg--t2 { background: var(--color-text-muted); opacity: 0.5; }
+  .im__seg--bike { background: var(--viz-2); }
+  .im__seg--run { background: var(--viz-3); }
+  .im__goal-marker { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--color-text); }
+  .im__goal-flag { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: var(--text-xs); font-weight: 700; color: var(--color-text); white-space: nowrap; }
+  .im__legend { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); list-style: none; margin: var(--space-5) 0 0; padding: 0; font-size: var(--text-sm); color: var(--color-text-muted); }
+  .im__legend li { display: inline-flex; align-items: center; gap: var(--space-2); }
+  .im__dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .im__legend-t { font-style: italic; }
+
+  /* ---- JOURNEY ---- */
+  .im__canvas-wrap { position: relative; aspect-ratio: 16 / 7; }
+  .im__canvas-wrap--sm { aspect-ratio: 16 / 9; }
+
+  /* ---- AUX (demoted) ---- */
+  .im__aux { border-top: 1px solid var(--color-border); padding-top: var(--space-5); }
+  .im__aux-title { margin: 0 0 var(--space-4); font-size: var(--text-sm); font-weight: 700; color: var(--color-text-muted); }
+  .im__aux-title span { font-weight: 400; }
+  .im__aux-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+  .im__aux-chart { margin: 0; }
+  .im__aux-chart figcaption { font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-2); }
 
   @media (max-width: 760px) {
-    .im__tiles { grid-template-columns: repeat(2, 1fr); }
-    .im__charts { grid-template-columns: 1fr; }
+    .im__hero { grid-template-columns: 1fr; }
+    .im__gauge { max-width: 280px; margin-inline: auto; }
+    .im__aux-grid { grid-template-columns: 1fr; }
   }
 </style>
 
@@ -160,6 +266,7 @@ const fmt1 = (n) => Number(n).toFixed(1);
   } from 'chart.js';
   import data from '../../data/ironman-training.json';
   import { cssVar, vizPalette, withAlpha, onThemeChange } from '../../lib/chartTheme.js';
+  import { projectionTrend, parseHMS, formatHM, formatHMS } from '../../lib/ironman.js';
 
   Chart.register(
     BarController, BarElement, LineController, LineElement, PointElement,
@@ -168,26 +275,84 @@ const fmt1 = (n) => Number(n).toFixed(1);
 
   const weeks = data.weeks ?? [];
 
-  // --- Countdown (computed client-side so it's right between rebuilds) ---
+  // Countdown (client-side so it's correct between rebuilds).
   const countdownEl = document.getElementById('im-countdown');
   if (countdownEl?.dataset.raceDate) {
     const race = new Date(countdownEl.dataset.raceDate + 'T00:00:00');
     const days = Math.ceil((race - new Date()) / 86400000);
-    countdownEl.textContent = days > 0 ? String(days) : days === 0 ? 'Today!' : 'Done';
+    countdownEl.textContent = days > 0 ? String(days) : days === 0 ? 'race day —' : 'done —';
   }
 
-  // Parse 'YYYY-MM-DD' as a local date and label it "Mar 3".
+  // Week labels "Mar 3" (parse as local to avoid TZ drift).
   const labelFmt = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' });
   const labels = weeks.map((w) => {
     const [y, m, d] = w.weekStart.split('-').map(Number);
     return labelFmt.format(new Date(y, m - 1, d));
   });
 
-  const volumeCanvas = document.getElementById('im-volume');
-  const fitnessCanvas = document.getElementById('im-fitness');
-  let volumeChart, fitnessChart;
+  const charts = [];
 
+  // ---- HERO-SUPPORT: journey line (projected finish per week + goal line) ----
+  const journeyCanvas = document.getElementById('im-journey');
+  function buildJourney() {
+    if (!journeyCanvas) return;
+    const accent = cssVar('--color-accent');
+    const danger = cssVar('--color-danger');
+    const text = cssVar('--color-text-muted');
+    const grid = cssVar('--color-border');
+    const goalSec = parseHMS(data.goalFinish);
+    const trend = projectionTrend(weeks, data).map((t) => t.finishSeconds);
+
+    charts.push(new Chart(journeyCanvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Projected finish',
+            data: trend,
+            borderColor: accent,
+            backgroundColor: withAlpha(accent, 0.12),
+            pointBackgroundColor: accent,
+            spanGaps: true,
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2,
+          },
+          {
+            label: 'Sub-12 goal',
+            data: labels.map(() => goalSec),
+            borderColor: danger,
+            borderDash: [6, 5],
+            borderWidth: 1.5,
+            pointRadius: 0,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: text, usePointStyle: true, boxHeight: 7 } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y != null ? formatHMS(ctx.parsed.y) : '—'}`,
+            },
+          },
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: text, maxRotation: 0, autoSkipPadding: 12 } },
+          y: { grid: { color: grid }, ticks: { color: text, callback: (v) => formatHM(v) } },
+        },
+      },
+    }));
+  }
+
+  // ---- AUX: weekly volume (stacked bar) ----
+  const volumeCanvas = document.getElementById('im-volume');
   function buildVolume() {
+    if (!volumeCanvas) return;
     const [swimC, bikeC, runC] = vizPalette();
     const text = cssVar('--color-text-muted');
     const grid = cssVar('--color-border');
@@ -196,15 +361,15 @@ const fmt1 = (n) => Number(n).toFixed(1);
       { label: 'Bike', key: 'bike', color: bikeC },
       { label: 'Run', key: 'run', color: runC },
     ];
-    volumeChart = new Chart(volumeCanvas, {
+    charts.push(new Chart(volumeCanvas, {
       type: 'bar',
       data: {
         labels,
-        datasets: series.map((s) => ({
-          label: s.label,
-          data: weeks.map((w) => w.hours[s.key] ?? 0),
-          backgroundColor: s.color,
-          borderRadius: 3,
+        datasets: series.map((sName) => ({
+          label: sName.label,
+          data: weeks.map((w) => w.hours[sName.key] ?? 0),
+          backgroundColor: sName.color,
+          borderRadius: 2,
           stack: 'vol',
         })),
       },
@@ -212,67 +377,56 @@ const fmt1 = (n) => Number(n).toFixed(1);
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { labels: { color: text, usePointStyle: true, boxHeight: 7 } } },
+        plugins: { legend: { labels: { color: text, usePointStyle: true, boxHeight: 6, font: { size: 10 } } } },
         scales: {
-          x: { stacked: true, grid: { display: false }, ticks: { color: text, maxRotation: 0, autoSkipPadding: 12 } },
-          y: { stacked: true, grid: { color: grid }, ticks: { color: text }, title: { display: true, text: 'hours', color: text } },
+          x: { stacked: true, grid: { display: false }, ticks: { color: text, maxRotation: 0, autoSkipPadding: 14 } },
+          y: { stacked: true, grid: { color: grid }, ticks: { color: text } },
         },
       },
-    });
+    }));
   }
 
+  // ---- AUX: training load (line) ----
+  const fitnessCanvas = document.getElementById('im-fitness');
   function buildFitness() {
-    const accent = cssVar('--color-accent');
+    if (!fitnessCanvas) return;
+    const accent = cssVar('--viz-4');
     const text = cssVar('--color-text-muted');
     const grid = cssVar('--color-border');
-    fitnessChart = new Chart(fitnessCanvas, {
+    charts.push(new Chart(fitnessCanvas, {
       type: 'line',
       data: {
         labels,
-        datasets: [
-          {
-            label: 'Training load',
-            data: weeks.map((w) => w.load ?? 0),
-            borderColor: accent,
-            backgroundColor: withAlpha(accent, 0.15),
-            pointBackgroundColor: accent,
-            fill: true,
-            tension: 0.35,
-            borderWidth: 2,
-          },
-        ],
+        datasets: [{
+          label: 'Load',
+          data: weeks.map((w) => w.load ?? 0),
+          borderColor: accent,
+          backgroundColor: withAlpha(accent, 0.15),
+          pointBackgroundColor: accent,
+          fill: true,
+          tension: 0.35,
+          borderWidth: 2,
+        }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: {
-            callbacks: {
-              // Surface heart rate alongside the load value.
-              afterLabel: (ctx) => {
-                const hr = weeks[ctx.dataIndex]?.avgHr;
-                return hr ? `Avg HR: ${hr} bpm` : '';
-              },
-            },
-          },
+          tooltip: { callbacks: { afterLabel: (ctx) => { const hr = weeks[ctx.dataIndex]?.avgHr; return hr ? `Avg HR: ${hr} bpm` : ''; } } },
         },
         scales: {
-          x: { grid: { display: false }, ticks: { color: text, maxRotation: 0, autoSkipPadding: 12 } },
+          x: { grid: { display: false }, ticks: { color: text, maxRotation: 0, autoSkipPadding: 14 } },
           y: { grid: { color: grid }, ticks: { color: text }, beginAtZero: true },
         },
       },
-    });
+    }));
   }
 
-  function buildAll() {
-    if (volumeCanvas) buildVolume();
-    if (fitnessCanvas) buildFitness();
-  }
+  function buildAll() { buildJourney(); buildVolume(); buildFitness(); }
   buildAll();
   onThemeChange(() => {
-    volumeChart?.destroy();
-    fitnessChart?.destroy();
+    while (charts.length) charts.pop().destroy();
     buildAll();
   });
 </script>

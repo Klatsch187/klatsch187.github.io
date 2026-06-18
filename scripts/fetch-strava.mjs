@@ -90,6 +90,7 @@ function aggregate(activities) {
     byWeek.set(iso(m), {
       weekStart: iso(m),
       hours: { swim: 0, bike: 0, run: 0 },
+      dist: { swim: 0, bike: 0, run: 0 },
       sessions: 0,
       load: 0,
       _hrSum: 0,
@@ -110,14 +111,16 @@ function aggregate(activities) {
     const hr = a.average_heartrate || null;
     const intensity = hr ? Math.max(0.5, Math.min(1, hr / maxHr)) : DEFAULT_IF[sport];
 
+    const km = (a.distance || 0) / 1000;
     wk.hours[sport] += sec / 3600;
+    wk.dist[sport] += km;
     wk.sessions += 1;
     wk.load += (sec / 60) * intensity * 1.5;
     if (hr) { wk._hrSum += hr * sec; wk._hrTime += sec; }
 
     totals.sessions += 1;
     totals.movingSeconds += sec;
-    totals.distanceKm[sport] += (a.distance || 0) / 1000;
+    totals.distanceKm[sport] += km;
   }
 
   const weeks = [...byWeek.values()].map((w) => ({
@@ -126,6 +129,11 @@ function aggregate(activities) {
       swim: +w.hours.swim.toFixed(2),
       bike: +w.hours.bike.toFixed(2),
       run: +w.hours.run.toFixed(2),
+    },
+    distanceKm: {
+      swim: +w.dist.swim.toFixed(2),
+      bike: +w.dist.bike.toFixed(1),
+      run: +w.dist.run.toFixed(2),
     },
     sessions: w.sessions,
     avgHr: w._hrTime ? Math.round(w._hrSum / w._hrTime) : null,
@@ -154,12 +162,15 @@ async function main() {
 
   const out = {
     _README:
-      'GENERATED from Strava — do not hand-edit; re-run `npm run fetch:strava`. Race/targets come from ironman-config.json.',
+      'GENERATED from Strava — do not hand-edit; re-run `npm run fetch:strava`. Race/goal/targets/model come from ironman-config.json.',
     generatedAt: new Date().toISOString(),
     source: 'strava',
     athlete: config.athlete,
     race: config.race,
+    goalFinish: config.goalFinish,
+    raceDistanceKm: config.raceDistanceKm,
     targets: config.targets,
+    model: config.model,
     totals,
     weeks,
   };
