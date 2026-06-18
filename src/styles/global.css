@@ -27,13 +27,6 @@
   --viz-5: #ef4444;
   --viz-6: #a855f7;
 
-  /* Heatmap intensity ramp (light) — level 0..4 */
-  --heat-0: #ebedf0;
-  --heat-1: #c6e7d0;
-  --heat-2: #7bd0a0;
-  --heat-3: #36a169;
-  --heat-4: #1a6b40;
-
   /* ---- Spacing scale (8px base) ---- */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -88,12 +81,6 @@
   --viz-4: #fbbf24;
   --viz-5: #f87171;
   --viz-6: #c084fc;
-
-  --heat-0: #20242e;
-  --heat-1: #1e4632;
-  --heat-2: #2c7a52;
-  --heat-3: #3fb073;
-  --heat-4: #5fe39a;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow: 0 6px 24px rgba(0, 0, 0, 0.5);

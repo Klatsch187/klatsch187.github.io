@@ -1,17 +1,17 @@
 {
   "name": "Klatsch187",
-  "tagline": "Curious human · sometime traveler · maker of small things",
+  "tagline": "Lazy human · sometime traveler · amateur sport person",
   "intro": "PLACEHOLDER — Replace with a short, friendly intro. I'm a [role] who likes [thing], [thing], and turning data about my life into little charts. Below is me, quantified-ish.",
   "location": "Somewhere, Earth",
-  "avatarEmoji": "🛰️",
+  "avatarEmoji": "🏗️",
   "links": [
     { "label": "GitHub", "url": "https://github.com/Klatsch187" },
-    { "label": "Email", "url": "mailto:you@example.com" }
+    { "label": "YouTube", "url": "https://www.youtube.com/@jumboyz-" }
   ],
   "quickFacts": [
-    { "label": "Based in", "value": "Placeholder City" },
-    { "label": "Currently", "value": "Building this website" },
-    { "label": "Coffee/day", "value": "≈ 2.5" },
-    { "label": "Open to", "value": "Cool projects" }
+    { "label": "Loitering in", "value": "Zurich" },
+    { "label": "Currently", "value": "Finding the purpose of life" },
+    { "label": "Favorite Number", "value": "≈ 14" },
+    { "label": "Open to", "value": "tomfoolery" }
   ]
 }

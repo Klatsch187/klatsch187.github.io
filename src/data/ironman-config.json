@@ -1,0 +1,14 @@
+{
+  "_README": "User-owned Ironman settings that Strava CAN'T provide. Edit these freely. Both scripts/generate-ironman.mjs (placeholder) and scripts/fetch-strava.mjs (live) read this file and embed it into src/data/ironman-training.json, which the chart actually reads. `race.date` drives the countdown; `targets.peakWeeklyHours` drives the readiness gauge; `targets.maxHr` is used to estimate training load from heart rate. `lookbackWeeks` bounds how far back the Strava fetch reaches.",
+  "athlete": "Klatsch187",
+  "race": {
+    "name": "Ironman Placeholder 2026",
+    "date": "2026-09-06",
+    "distanceKey": "140.6"
+  },
+  "targets": {
+    "peakWeeklyHours": 14,
+    "maxHr": 190
+  },
+  "lookbackWeeks": 20
+}

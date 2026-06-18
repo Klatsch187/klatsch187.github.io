@@ -1,13 +1,20 @@
-# Builds the Astro site and deploys it to GitHub Pages on every push to main.
+# Builds the Astro site and deploys it to GitHub Pages.
 #
 # One-time setup in the repo: Settings → Pages → "Build and deployment" →
 # Source: "GitHub Actions". (Not "Deploy from a branch".)
+#
+# Optional Strava integration (Ironman training chart): add repo secrets
+#   STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_REFRESH_TOKEN
+# (Settings → Secrets and variables → Actions). Without them the build falls
+# back to the committed placeholder data — it never fails. See README.
 name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
-  workflow_dispatch: # allow manual runs from the Actions tab
+  workflow_dispatch: # manual runs from the Actions tab
+  schedule:
+    - cron: '0 5 * * *' # daily ~05:00 UTC: refresh Strava data and redeploy
 
 # Permissions the deploy needs.
 permissions:
@@ -26,9 +33,32 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      # Installs Node + deps, runs `astro build`, and uploads the Pages artifact.
-      - name: Build with Astro
-        uses: withastro/action@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Pull fresh Strava data (no-op if secrets aren't set — keeps placeholder).
+      - name: Fetch Strava training data
+        run: npm run fetch:strava
+        env:
+          STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+
+      - name: Build site
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
 
   deploy:
     needs: build
