@@ -11,8 +11,8 @@ const events = [...timeline.events].sort((a, b) => a.year - b.year);
 
 <ol class="timeline" aria-label="Timeline of life events">
   {
-    events.map((e) => (
-      <li class="timeline__item">
+    events.map((e, i) => (
+      <li class="timeline__item reveal" style={`--reveal-i: ${i}`}>
         <span class="timeline__dot" aria-hidden="true">{e.icon ?? '•'}</span>
         <div class="timeline__content card">
           <p class="timeline__year">{e.year}</p>

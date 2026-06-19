@@ -47,7 +47,7 @@ src/
 │   └── reviews/         # ← reviews live here, one .md per review
 ├── content.config.ts    # review front-matter schema (validated at build)
 ├── data/                # ← editable data files (your numbers go here)
-│   ├── profile.json         hero intro + quick facts
+│   ├── profile.json         hero intro + scroll statement + quick facts
 │   ├── countries-visited.json   visited countries (ISO alpha-3)
 │   ├── traits.json          radar chart axes
 │   ├── skills.json          skills-over-time series
@@ -71,11 +71,46 @@ src/
 
 ### Re-theme the site (colors, spacing, fonts)
 
-All design tokens are CSS variables at the top of
-[`src/styles/global.css`](src/styles/global.css). Edit `--color-accent`,
-`--space-*`, `--font-sans`, etc. Light and dark palettes are defined in
-`:root` and `:root[data-theme='dark']`. Change them in one place; the whole
-site (and the charts) follow.
+The site uses an **"Editorial Swiss"** design system — a serif display face
+(Fraunces) over a grotesque (Inter), a paper-and-ink palette with one vermilion
+ink accent, hairline rules, sharp corners and minimal shadows. All design tokens
+are CSS variables at the top of [`src/styles/global.css`](src/styles/global.css):
+edit `--color-accent`, `--space-*`, `--font-serif`/`--font-sans`, `--radius*`,
+etc. Light and dark palettes are defined in `:root` and `:root[data-theme='dark']`.
+Change them in one place; the whole site (and the charts) follow. The two fonts
+are loaded via a `<link>` in [`src/layouts/BaseLayout.astro`](src/layouts/BaseLayout.astro)
+— swap that to change typefaces.
+
+### Motion & scroll effects
+
+The About page has a light **scroll-motion layer** — no framework, no
+dependencies. It's a few effects: a staggered **hero entrance**, **sections
+that reveal** as they scroll into view, and a featured line whose color **fills
+as you scroll** through it.
+
+How it's wired:
+
+- All of it is **gated behind a `.scroll-fx` class** that an inline script in
+  [`src/layouts/BaseLayout.astro`](src/layouts/BaseLayout.astro) adds to `<html>`
+  **only when JS runs and `prefers-reduced-motion` is _not_ set**. So with no
+  JS, or with reduced motion, every element renders in its final, fully-visible
+  state — nothing is hidden. A second tiny inline script is one shared
+  `IntersectionObserver` that toggles `.is-visible`.
+- The CSS lives in one **"MOTION / SCROLL FX"** block at the bottom of
+  [`src/styles/global.css`](src/styles/global.css). Effects use `currentColor`
+  and the existing `--color-*` tokens, so they follow light/dark themes for free.
+- One small component: [`src/components/ScrollText.astro`](src/components/ScrollText.astro)
+  (the scroll-synced fill, fed by `profile.statement`). Section headings get a
+  static editorial accent rule from `.section__head h2::after` in `global.css`.
+
+Tuning / disabling:
+
+- **Disable everything**: remove the `.scroll-fx` gate script in `BaseLayout`
+  (the page keeps working, just static).
+- **Reveal more/less**: add or remove the `reveal` class on an element; stagger
+  with `style="--reveal-i: N"`.
+- The scroll-synced fill needs the modern `animation-timeline: view()`; older
+  browsers just show solid text.
 
 ### Add a visited country (world map)
 

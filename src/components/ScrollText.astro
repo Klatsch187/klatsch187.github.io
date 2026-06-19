@@ -1,0 +1,17 @@
+---
+/**
+ * ScrollText — a featured line whose color fills in as it scrolls through the
+ * viewport (the "scroll-synced text" effect). Implemented with pure CSS:
+ * `background-clip: text` + a scroll-driven `animation-timeline: view()` (see
+ * the `.fx-scrolltext` rules in global.css).
+ *
+ * Progressive enhancement: browsers without scroll-driven animations — or users
+ * with reduced motion / no JS — simply get solid, fully-colored text. Must be
+ * placed where it can be scrolled *through* (i.e. not above the fold).
+ *
+ * Content comes from the default slot. Colors use --color-* tokens, so it
+ * follows light/dark themes automatically.
+ */
+---
+
+<p class="fx-scrolltext"><slot /></p>

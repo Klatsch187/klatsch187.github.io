@@ -1,0 +1,113 @@
+---
+/**
+ * AboutSections — the About-page body below the hero: world map, Ironman
+ * projection, a scroll-synced interlude, traits radar, skills area, and the
+ * life timeline. Lifted out of index.astro so the page composition stays tidy.
+ *
+ * Styling is `is:global` (scoped under `.about-body`) so it cooperates with the
+ * site design system in global.css. The titled sections are auto-numbered and
+ * ruled off in the editorial style.
+ */
+import WorldMap from './charts/WorldMap.astro';
+import RadarChart from './charts/RadarChart.astro';
+import IronmanTraining from './charts/IronmanTraining.astro';
+import SkillsArea from './charts/SkillsArea.astro';
+import Timeline from './charts/Timeline.astro';
+import ScrollText from './ScrollText.astro';
+import profile from '../data/profile.json';
+---
+
+<div class="about-body">
+  {/* --- Visited countries map --- */}
+  <section id="map" class="section container reveal">
+    <header class="section__head">
+      <p class="section__eyebrow">Where I've been</p>
+      <h2>Countries visited</h2>
+      <p class="section__lead">
+        Hover a highlighted country for details.
+      </p>
+    </header>
+    <WorldMap />
+  </section>
+
+  {/* --- Ironman training (Strava-driven) --- */}
+  <section id="ironman" class="section container reveal">
+    <header class="section__head">
+      <p class="section__eyebrow">Road to sub-12</p>
+      <h2>Ironman projection</h2>
+      <p class="section__lead">
+        Where my training paces say I'd finish — and how close that is to a
+        sub-12:00 Ironman. Extrapolated from Strava swim/bike/run data
+        (placeholder until <a href="https://github.com/Klatsch187/klatsch187.github.io#ironman-training-strava">Strava is connected</a>).
+      </p>
+    </header>
+    <IronmanTraining />
+  </section>
+
+  {/* --- Scroll-synced interlude statement --- */}
+  <section class="interlude container reveal" aria-label="A statement">
+    <ScrollText>{profile.statement}</ScrollText>
+  </section>
+
+  {/* --- Personal traits radar --- */}
+  <section id="metrics" class="section container reveal">
+    <header class="section__head">
+      <p class="section__eyebrow">Me, quantified-ish</p>
+      <h2>Traits</h2>
+      <p class="section__lead">A radar chart of self-rated traits.</p>
+    </header>
+    <div class="radar-wrap">
+      <RadarChart />
+    </div>
+  </section>
+
+  {/* --- Skills over time --- */}
+  <section id="skills" class="section container reveal">
+    <header class="section__head">
+      <p class="section__eyebrow">Leveling up</p>
+      <h2>Skills over time</h2>
+      <p class="section__lead">Stacked area of proficiency by year.</p>
+    </header>
+    <SkillsArea />
+  </section>
+
+  {/* --- Life timeline --- */}
+  <section id="timeline" class="section container reveal">
+    <header class="section__head">
+      <p class="section__eyebrow">The story so far</p>
+      <h2>Life timeline</h2>
+      <p class="section__lead">Milestones, in order.</p>
+    </header>
+    <Timeline />
+  </section>
+</div>
+
+<style is:global>
+  /* Keep the radar from stretching too wide on large screens. */
+  .about-body .radar-wrap { max-width: 460px; margin-inline: auto; }
+
+  /* Number the titled sections 01, 02, … and rule them off (editorial). */
+  .about-body { counter-reset: sec; }
+  .about-body .section { border-top: 1px solid var(--color-border); }
+  .about-body .section:first-of-type { border-top: none; }
+  .about-body .section__head { counter-increment: sec; }
+  .about-body .section__eyebrow::before {
+    content: counter(sec, decimal-leading-zero) '  /  ';
+    color: var(--color-accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Scroll-synced interlude statement — set in the serif display face. */
+  .about-body .interlude {
+    padding-block: var(--space-8);
+    text-align: center;
+    max-width: 24ch;
+  }
+  .about-body .interlude .fx-scrolltext {
+    font-family: var(--font-serif);
+    font-weight: 600;
+  }
+  @media (min-width: 720px) {
+    .about-body .interlude { max-width: 30ch; }
+  }
+</style>
