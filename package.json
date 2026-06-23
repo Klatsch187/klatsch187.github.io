@@ -10,7 +10,10 @@
     "preview": "astro preview",
     "astro": "astro",
     "gen:ironman": "node scripts/generate-ironman.mjs",
-    "fetch:strava": "node scripts/fetch-strava.mjs"
+    "import:coros": "node scripts/import-coros.mjs"
+  },
+  "devDependencies": {
+    "fit-file-parser": "^1.21.0"
   },
   "dependencies": {
     "astro": "^5.6.0",

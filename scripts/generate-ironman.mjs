@@ -4,8 +4,8 @@
  * Output: src/data/ironman-training.json  (the file the chart reads)
  * Reads:  src/data/ironman-config.json    (race + targets you own)
  *
- * Shape is IDENTICAL to scripts/fetch-strava.mjs, so swapping placeholder →
- * real Strava data needs no chart changes. Each week carries per-discipline
+ * Shape is IDENTICAL to scripts/import-coros.mjs, so swapping placeholder →
+ * real COROS data needs no chart changes. Each week carries per-discipline
  * `hours` AND `distanceKm`, so the projection model (src/lib/ironman.js) can
  * derive race pace. Speeds improve over the block so the projected finish
  * trends down and crosses under the sub-12 goal near "now". Re-run with
@@ -91,7 +91,7 @@ totals.distanceKm.run = Math.round(totals.distanceKm.run);
 
 const out = {
   _README:
-    'GENERATED — do not hand-edit; re-run `npm run gen:ironman` (placeholder) or `npm run fetch:strava` (live). Race/targets/model come from ironman-config.json. `weeks` is oldest→newest; `hours` + `distanceKm` are per discipline (their ratio = pace); `load` is a TRIMP-like proxy.',
+    'GENERATED — do not hand-edit; re-run `npm run gen:ironman` (placeholder) or `npm run import:coros` (real COROS .FIT data). Race/targets/model come from ironman-config.json. `weeks` is oldest→newest; `hours` + `distanceKm` are per discipline (their ratio = pace); `load` is a TRIMP-like proxy.',
   generatedAt: new Date().toISOString(),
   source: 'placeholder',
   athlete: config.athlete,

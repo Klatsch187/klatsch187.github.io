@@ -1,7 +1,7 @@
 {
-  "_README": "GENERATED — do not hand-edit; re-run `npm run gen:ironman` (placeholder) or `npm run fetch:strava` (live). Race/targets/model come from ironman-config.json. `weeks` is oldest→newest; `hours` + `distanceKm` are per discipline (their ratio = pace); `load` is a TRIMP-like proxy.",
-  "generatedAt": "2026-06-18T15:30:42.016Z",
-  "source": "placeholder",
+  "_README": "GENERATED from COROS .FIT exports — do not hand-edit; re-run `npm run import:coros`. Race/goal/targets/model come from ironman-config.json.",
+  "generatedAt": "2026-06-23T21:03:06.508Z",
+  "source": "coros",
   "athlete": "Klatsch187",
   "race": {
     "name": "Ironman Placeholder 2026",
@@ -28,334 +28,334 @@
     "paceWindowWeeks": 6
   },
   "totals": {
-    "sessions": 169,
-    "movingHours": 179.6,
+    "sessions": 3,
+    "movingHours": 4.1,
     "distanceKm": {
-      "swim": 78,
-      "bike": 2818,
-      "run": 562
+      "swim": 1,
+      "bike": 40,
+      "run": 20
     }
   },
   "weeks": [
     {
-      "weekStart": "2026-02-01",
+      "weekStart": "2026-02-09",
       "hours": {
-        "swim": 0.99,
-        "bike": 3.74,
-        "run": 1.95
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 2.65,
-        "bike": 99.6,
-        "run": 18.84
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 7,
-      "avgHr": 136,
-      "load": 430
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-02-08",
+      "weekStart": "2026-02-16",
       "hours": {
-        "swim": 0.96,
-        "bike": 3.95,
-        "run": 1.92
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 2.67,
-        "bike": 104.9,
-        "run": 19.03
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 7,
-      "avgHr": 137,
-      "load": 443
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-02-15",
+      "weekStart": "2026-02-23",
       "hours": {
-        "swim": 0.98,
-        "bike": 3.9,
-        "run": 1.95
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 2.64,
-        "bike": 102.5,
-        "run": 18.89
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 7,
-      "avgHr": 136,
-      "load": 440
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-02-22",
+      "weekStart": "2026-03-02",
       "hours": {
-        "swim": 0.62,
-        "bike": 2.71,
-        "run": 1.39
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 1.7,
-        "bike": 73.8,
-        "run": 13.91
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 6,
-      "avgHr": 136,
-      "load": 304
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-03-01",
+      "weekStart": "2026-03-09",
       "hours": {
-        "swim": 1.19,
-        "bike": 4.41,
-        "run": 2.21
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 3.21,
-        "bike": 120,
-        "run": 22.72
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 8,
-      "avgHr": 136,
-      "load": 503
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-03-08",
+      "weekStart": "2026-03-16",
       "hours": {
-        "swim": 1.2,
-        "bike": 4.23,
-        "run": 2.43
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 3.28,
-        "bike": 114.2,
-        "run": 24.74
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 8,
-      "avgHr": 139,
-      "load": 518
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-03-15",
+      "weekStart": "2026-03-23",
       "hours": {
-        "swim": 1.39,
-        "bike": 4.81,
-        "run": 2.41
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 3.96,
-        "bike": 131.5,
-        "run": 24.39
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 8,
-      "avgHr": 137,
-      "load": 559
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-03-22",
+      "weekStart": "2026-03-30",
       "hours": {
-        "swim": 0.87,
-        "bike": 3.46,
-        "run": 1.82
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 2.4,
-        "bike": 95.6,
-        "run": 18.62
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 7,
-      "avgHr": 140,
-      "load": 408
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-03-29",
+      "weekStart": "2026-04-06",
       "hours": {
-        "swim": 1.51,
-        "bike": 4.9,
-        "run": 2.74
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 4.18,
-        "bike": 137,
-        "run": 29.24
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 9,
-      "avgHr": 142,
-      "load": 615
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-04-05",
+      "weekStart": "2026-04-13",
       "hours": {
-        "swim": 1.61,
-        "bike": 5.12,
-        "run": 2.63
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 4.58,
-        "bike": 140.9,
-        "run": 27.97
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 9,
-      "avgHr": 139,
-      "load": 616
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-04-12",
+      "weekStart": "2026-04-20",
       "hours": {
-        "swim": 1.67,
-        "bike": 6.01,
-        "run": 3.21
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 4.8,
-        "bike": 165.4,
-        "run": 34.75
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 9,
-      "avgHr": 142,
-      "load": 732
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-04-19",
+      "weekStart": "2026-04-27",
       "hours": {
-        "swim": 0.99,
-        "bike": 3.68,
-        "run": 2.17
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 2.89,
-        "bike": 106.3,
-        "run": 22.84
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 8,
-      "avgHr": 144,
-      "load": 467
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-04-26",
+      "weekStart": "2026-05-04",
       "hours": {
-        "swim": 1.82,
-        "bike": 6.43,
-        "run": 3.44
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 5.12,
-        "bike": 186.4,
-        "run": 36.94
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 10,
-      "avgHr": 143,
-      "load": 792
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-05-03",
+      "weekStart": "2026-05-11",
       "hours": {
-        "swim": 1.6,
-        "bike": 5.68,
-        "run": 3.01
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 4.75,
-        "bike": 162.2,
-        "run": 32.54
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 9,
-      "avgHr": 140,
-      "load": 682
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-05-10",
+      "weekStart": "2026-05-18",
       "hours": {
-        "swim": 1.88,
-        "bike": 6.82,
-        "run": 3.38
+        "swim": 0.45,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 5.51,
-        "bike": 193.4,
-        "run": 37.32
+        "swim": 1.07,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 10,
-      "avgHr": 141,
-      "load": 807
+      "sessions": 1,
+      "avgHr": 113,
+      "load": 24
     },
     {
-      "weekStart": "2026-05-17",
+      "weekStart": "2026-05-25",
       "hours": {
-        "swim": 1.22,
-        "bike": 4.71,
-        "run": 2.52
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 3.56,
-        "bike": 136.6,
-        "run": 27.44
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 8,
-      "avgHr": 145,
-      "load": 580
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-05-24",
+      "weekStart": "2026-06-01",
       "hours": {
-        "swim": 1.84,
-        "bike": 6.49,
-        "run": 3.7
+        "swim": 0,
+        "bike": 0,
+        "run": 2.09
       },
       "distanceKm": {
-        "swim": 5.51,
-        "bike": 188.8,
-        "run": 42.25
+        "swim": 0,
+        "bike": 0,
+        "run": 20.02
       },
-      "sessions": 10,
-      "avgHr": 144,
-      "load": 821
+      "sessions": 1,
+      "avgHr": 151,
+      "load": 149
     },
     {
-      "weekStart": "2026-05-31",
+      "weekStart": "2026-06-08",
       "hours": {
-        "swim": 1.95,
-        "bike": 6.95,
-        "run": 3.77
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 5.78,
-        "bike": 209.5,
-        "run": 42.51
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 10,
-      "avgHr": 142,
-      "load": 852
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     },
     {
-      "weekStart": "2026-06-07",
+      "weekStart": "2026-06-15",
       "hours": {
-        "swim": 1.78,
-        "bike": 7.13,
-        "run": 3.37
+        "swim": 0,
+        "bike": 1.57,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 5.41,
-        "bike": 213,
-        "run": 39.16
+        "swim": 0,
+        "bike": 40,
+        "run": 0
       },
-      "sessions": 10,
-      "avgHr": 144,
-      "load": 838
+      "sessions": 1,
+      "avgHr": 149,
+      "load": 111
     },
     {
-      "weekStart": "2026-06-14",
+      "weekStart": "2026-06-22",
       "hours": {
-        "swim": 1.28,
-        "bike": 4.62,
-        "run": 2.46
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
       "distanceKm": {
-        "swim": 3.78,
-        "bike": 135.9,
-        "run": 28.22
+        "swim": 0,
+        "bike": 0,
+        "run": 0
       },
-      "sessions": 9,
-      "avgHr": 146,
-      "load": 578
+      "sessions": 0,
+      "avgHr": null,
+      "load": 0
     }
   ]
 }

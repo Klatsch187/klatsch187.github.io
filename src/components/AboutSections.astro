@@ -30,16 +30,14 @@ import profile from '../data/profile.json';
     <WorldMap />
   </section>
 
-  {/* --- Ironman training (Strava-driven) --- */}
+  {/* --- Ironman training (COROS-driven) --- */}
   <section id="ironman" class="section container reveal">
     <header class="section__head">
       <p class="section__eyebrow">Road to sub-12</p>
       <h2>Ironman projection</h2>
       <p class="section__lead">
         Where my training paces say I'd finish — and how close that is to a
-        sub-12:00 Ironman. Extrapolated from Strava swim/bike/run data
-        (placeholder until <a href="https://github.com/Klatsch187/klatsch187.github.io#ironman-training-strava">Strava is connected</a>).
-      </p>
+        sub-12:00 Ironman. Extrapolated from my COROS swim/bike/run data.
     </header>
     <IronmanTraining />
   </section>
@@ -54,7 +52,7 @@ import profile from '../data/profile.json';
     <header class="section__head">
       <p class="section__eyebrow">Me, quantified-ish</p>
       <h2>Traits</h2>
-      <p class="section__lead">A radar chart of self-rated traits.</p>
+      <p class="section__lead">Self rated qualities</p>
     </header>
     <div class="radar-wrap">
       <RadarChart />
@@ -62,6 +60,7 @@ import profile from '../data/profile.json';
   </section>
 
   {/* --- Skills over time --- */}
+  {/*
   <section id="skills" class="section container reveal">
     <header class="section__head">
       <p class="section__eyebrow">Leveling up</p>
@@ -70,13 +69,13 @@ import profile from '../data/profile.json';
     </header>
     <SkillsArea />
   </section>
-
+  */}
   {/* --- Life timeline --- */}
   <section id="timeline" class="section container reveal">
     <header class="section__head">
       <p class="section__eyebrow">The story so far</p>
       <h2>Life timeline</h2>
-      <p class="section__lead">Milestones, in order.</p>
+      <p class="section__lead">Chronological Steps</p>
     </header>
     <Timeline />
   </section>
@@ -101,13 +100,15 @@ import profile from '../data/profile.json';
   .about-body .interlude {
     padding-block: var(--space-8);
     text-align: center;
-    max-width: 24ch;
+    /* Allow the interlude to take more horizontal space (less side margin) */
+    max-width: 60ch;
+    margin-inline: auto;
   }
   .about-body .interlude .fx-scrolltext {
     font-family: var(--font-serif);
     font-weight: 600;
   }
   @media (min-width: 720px) {
-    .about-body .interlude { max-width: 30ch; }
+    .about-body .interlude { max-width: 80ch; }
   }
 </style>

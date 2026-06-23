@@ -1,7 +1,7 @@
 ---
 /**
  * IronmanTraining — "road to sub-12" panel driven by src/data/ironman-training.json
- * (placeholder via `npm run gen:ironman`, live via `npm run fetch:strava`).
+ * (placeholder via `npm run gen:ironman`, real data via `npm run import:coros`).
  *
  * Spotlight = the projected finish vs the sub-12 goal:
  *   HERO        goal gauge (SVG) + projected time, delta, gap-closed meter
@@ -80,8 +80,8 @@ if (hasProjection) {
 <div class="im card">
   {isPlaceholder && (
     <p class="placeholder-note im__note">
-      🏊 🚴 🏃 Placeholder data. Connect Strava (see the README) to project this
-      from real swim/bike/run paces — the numbers below update automatically.
+      🏊 🚴 🏃 Placeholder data. Import your COROS workouts (see the README) to
+      project this from real swim/bike/run paces — the numbers below update automatically.
     </p>
   )}
 

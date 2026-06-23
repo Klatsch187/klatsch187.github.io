@@ -12,6 +12,10 @@ node_modules/
 .env
 .env.production
 
+# COROS raw exports (parse locally with `npm run import:coros`; commit only the JSON)
+coros-exports/
+*.fit
+
 # logs / os
 npm-debug.log*
 *.log
